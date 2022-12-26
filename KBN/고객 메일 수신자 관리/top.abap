@@ -1,9 +1,9 @@
 *&---------------------------------------------------------------------*
 *& Include ZKEDU0005_TOP                            - Report ZKEDU0005
 *&---------------------------------------------------------------------*
-REPORT zkedu0005.
+REPORT zkedu0005 NO STANDARD PAGE HEADING MESSAGE-ID zmsd.
 
-TABLES: zsed0005t, zkedu0004.
+TABLES: zsed0005t.
 
 *--------------------------------------------------------------------*
 * SCREEN
@@ -11,13 +11,19 @@ TABLES: zsed0005t, zkedu0004.
 DATA : gv_okcode   LIKE sy-ucomm,
        gv_saveok   LIKE sy-ucomm.
 
+* SELECTED ROWS
+DATA : gt_rows TYPE lvc_t_row.
 
 
+*--------------------------------------------------------------------*
+* Variables
+*--------------------------------------------------------------------*
+DATA : gv_err.  "X:Error
 
 ************************************************************************
 * The Declaration of Variables
 ************************************************************************
-DATA: BEGIN OF gt_email OCCURS 0.
+DATA: BEGIN OF gt_email occurs 0.
       include STRUCTURE zsed0005t.
 *        vkorg       TYPE         zsed0005t-vkorg,
 *        spart       TYPE         zsed0005t-spart,
@@ -38,6 +44,10 @@ DATA: BEGIN OF gt_email OCCURS 0.
 *        sendtype    TYPE         zsed0005t-sendtype,
 *        mailtype    TYPE         zsed0005t-mailtype,
 *        comnt       TYPE         zsed0005t-comnt,
+     data: name1 type kna1-name1,
+           name2 type kna1-name1,
+           mark(1),
+           celltab TYPE lvc_t_styl.
      data: END OF gt_email.
      data: gs_email like line of gt_email.
 *      data: gt_email LIKE TABLE OF gs_email.
@@ -113,25 +123,25 @@ CONSTANTS : c_a       TYPE char01 VALUE 'A',
             c_23      TYPE char02 VALUE '23',
             c_24      TYPE char02 VALUE '24',
             c_25      TYPE char02 VALUE '25',
-            c_26      TYPE char2 VALUE '26',
-            c_27      TYPE char2 VALUE '27',
-            c_28      TYPE char2 VALUE '28',
-            c_29      TYPE char2 VALUE '29',
-            c_31      TYPE char2 VALUE '31',
-            c_32      TYPE char2 VALUE '32',
-            c_33      TYPE char2 VALUE '33',
-            c_34      TYPE char2 VALUE '34',
-            c_35      TYPE char2 VALUE '35',
-            c_36      TYPE char2 VALUE '36',
-            c_37      TYPE char2 VALUE '37',
-            c_38      TYPE char2 VALUE '38',
-            c_39      TYPE char2 VALUE '39',
-            c_41      TYPE char2 VALUE '41',
-            c_42      TYPE char2 VALUE '42',
-            c_43      TYPE char2 VALUE '43',
-            c_44      TYPE char2 VALUE '44',
-            c_45      TYPE char2 VALUE '45',
-            c_46      TYPE char2 VALUE '46',
-            c_47      TYPE char2 VALUE '47',
-            c_48      TYPE char2 VALUE '48',
-            c_49      TYPE char2 VALUE '49'.
+            c_26      TYPE char2  VALUE '26',
+            c_27      TYPE char2  VALUE '27',
+            c_28      TYPE char2  VALUE '28',
+            c_29      TYPE char2  VALUE '29',
+            c_31      TYPE char2  VALUE '31',
+            c_32      TYPE char2  VALUE '32',
+            c_33      TYPE char2  VALUE '33',
+            c_34      TYPE char2  VALUE '34',
+            c_35      TYPE char2  VALUE '35',
+            c_36      TYPE char2  VALUE '36',
+            c_37      TYPE char2  VALUE '37',
+            c_38      TYPE char2  VALUE '38',
+            c_39      TYPE char2  VALUE '39',
+            c_41      TYPE char2  VALUE '41',
+            c_42      TYPE char2  VALUE '42',
+            c_43      TYPE char2  VALUE '43',
+            c_44      TYPE char2  VALUE '44',
+            c_45      TYPE char2  VALUE '45',
+            c_46      TYPE char2  VALUE '46',
+            c_47      TYPE char2  VALUE '47',
+            c_48      TYPE char2  VALUE '48',
+            c_49      TYPE char2  VALUE '49'.
