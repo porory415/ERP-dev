@@ -29,7 +29,7 @@ function cfnInitOnload()
 	  ,{code:"ZDMNOTICE", dsName:"dsGrdNOTICECLS", useYn:"Y", selecttype:"",  objid: "divResult.grdList", bindcolumn:"NTCLS"} 	// 그리드결과Grid:업무구분
 	  ,{code:"ZDMNTCLVL", dsName:"dsGrdNOTICELVL", useYn:"Y", selecttype:"",  objid: "divResult.grdList", bindcolumn:"NTLVL"} 	// 그리드결과Grid:중요도	  	 
     ];
-	gfnGetSapCommonCode(oComcodeSetList); //페이지 오픈할때 DB에서 공통코드를 가지고 온다.			
+	gfnGetSapCommonCode(oComcodeSetList); //페이지 오픈할때 DB에서 공통코드를 가지고 온다.
 	
 	//그리드contextMenu
 	gfnSetGridContextMenu(divResult.grdList);
@@ -160,7 +160,7 @@ function cfnNew(obj:Button,  e:ClickEventInfo)
  * @return 없음
  * @memberOf ltsPca410
  */
-function cfnCallback(sTranId, nErrorCode, sErrorMsg) 
+function cfnCallback(sTranId, nErrorCode, sErrorMsg) //Q: 파라미터 3개 들어오는데 왜 하나만 쓰는건지
 {
 	if(sTranId == "cfnSearch"){
 		gfnSetAlertMsgUd("-1");			
@@ -222,7 +222,7 @@ function cfnBeforeGrid(objGrd, type, obj:Button,  e:ClickEventInfo)
  */
 function cfnBeforeClose()
 {
-	if((dsList.rowcount > 0 && gfnIsUpdateSap(dsList)))
+	if((dsList.rowcount > 0 && gfnIsUpdateSap(dsList)))  // 세션 종료시 수정여부 체크하는 함수. 수정 사항이 없어야 세션이 종료되는 듯함.
 	{
 		return false;
 	}
@@ -272,12 +272,12 @@ function cfnBeforeClose()
 		
 	var retVal = gfnDialog(strId, strURL, nTop, nLeft, nWidth, nHeight, bShowTitle, strAlign, strArgument, isModeless, winOption);
 
-	if(retVal != null) 
+	if(retVal != null)   //gfnDialog가 반환값이 있다면
 	{
- 		if (retVal.dsCostomerList.rowcount > 0)
+ 		if (retVal.dsCostomerList.rowcount > 0)   //고객 리스트 개수가 0 이상일 때
  		{
- 		    divSearch.edtKUNAG.value   = retVal.dsCostomerList.getColumn(0, "KUNNR");
- 		    divSearch.edtKUNAGNM.value = retVal.dsCostomerList.getColumn(0, "KUNNR_NM");
+ 		    divSearch.edtKUNAG.value   = retVal.dsCostomerList.getColumn(0, "KUNNR");  //박스 값을 kunnr로 채움
+ 		    divSearch.edtKUNAGNM.value = retVal.dsCostomerList.getColumn(0, "KUNNR_NM");  //박스 값을 kunnr_nm으로 채움
  		}
 	}
  }
@@ -339,11 +339,11 @@ function btnKUNAGCall_onclick(obj:Button,  e:ClickEventInfo)
  */
 function divSearch_edtKUNAGNM_canchange(obj:Edit,  e:ChangeEventInfo)
 {
-	if (gfnIsNull(e.postvalue))
+	if (gfnIsNull(e.postvalue))  //NULL 일때 참임 근데 파라미터 e.postvalue는 어디서 오는건지?
 	{
 	    divSearch.edtKUNAG.value = "";
 	}else{
-        fnOpenPopup();
+        fnOpenPopup();  //고객사 팝업
     }	    	
 }
 
@@ -354,16 +354,16 @@ function divSearch_edtKUNAGNM_canchange(obj:Edit,  e:ChangeEventInfo)
  * @return
  * @memberOf ltsPca410
  */
-function btnKUNAGNMClear_onclick(obj:Button,  e:ClickEventInfo)
+function btnKUNAGNMClear_onclick(obj:Button,  e:ClickEventInfo)  //Q: 이렇게 생긴 파라미터들이 많은데 의미가 뭔지.그럼 사용자 정의 함수가 아닌것인지.
 {
     divSearch.edtKUNAGNM.value = "";
-    divSearch.edtKUNAG.value    = "";			
+    divSearch.edtKUNAG.value    = "";	// 박스 값 모두 빈값으로 세팅
 }
 
 function divSearch_edtKUNAGNM_onkeydown(obj:Edit, e:KeyEventInfo)
 {
     // 팝업버튼으로 호출시 oncolumnchanged이벤트 중복방지(oncolumnchanged이벤트 내부는 제외)
-    if (e.keycode == 13) {
+    if (e.keycode == 13) { //Q: keycode 상수값은 어디서 볼수 있는지? 의미를 모르겠음.
         divSearch.edtKUNAGNM.enableevent = false;
         fnOpenPopup();
         divSearch.edtKUNAGNM.enableevent = true;
