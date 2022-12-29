@@ -32,7 +32,7 @@ function cfnInitOnload()
     //TODO : dsRollback에 대한 format설정	
     //TODO : upload하는 화면 onload이벤트에 아래 스크립트 추가
     //TODO : this.dsRollback.copyData(_gdsDefaultFormatFileInfoUpper);	
-    this.dsRollback.copyData(_gdsDefaultFormatFileInfoUpper);	 //dsRollback에 대한 format설정
+    this.dsRollback.copyData(_gdsDefaultFormatFileInfoUpper);	 //dsRollback에 대한 format설정 //인자가 데이터셋임...
         
    //vaildate 체크 목록 설정
    var oValidateSetList = [
@@ -46,8 +46,8 @@ function cfnInitOnload()
    gfnSetVaildate(oValidateSetList);
    
    //그리드 공통 버튼
-   divResult.divGridList.cfnSetCommButton(divResult.grdList,true,false,true,true,false);
-   divResult.divGridList02.cfnSetCommButton(divResult.grdList02,true,false,true,true,false);
+   divResult.divGridList.cfnSetCommButton(divResult.grdList,true,false,true,true,false); //상단 거래처 추가 그리드
+   divResult.divGridList02.cfnSetCommButton(divResult.grdList02,true,false,true,true,false);  //하단 첨부파일 그리드
    
    //sap용 textArea설정
    var oTextAreaSetList = [
@@ -84,11 +84,11 @@ function cfnCommonCodeCallBackSap()
 * @return 없음
 * @memberOf ltsPca400
 */
-function cfnInitForm()
+function cfnInitForm()  //초기화 버튼인듯
 {
    var aParams = gfnGetScreenParams();
    
-   if (!gfnIsNull(aParams))
+   if (!gfnIsNull(aParams))  //인자: 널 여부 체크 후 출력물 출력
    {
        if (!gfnIsNull(aParams[0].docno)){
            lvObjSend.SEQNO    = aParams[0].docno;
@@ -104,7 +104,7 @@ function cfnInitForm()
    }
    else
    {
-       fnClear();	//화면내용 Clear		
+       fnClear();	//화면내용 Clear
    }			
 }
 
@@ -117,9 +117,9 @@ function cfnInitForm()
 * @return 없음
 * @memberOf ltsPca400
 */
-function cfnBeforeTran(sTranId) 
+function cfnBeforeTran(sTranId) //등록에서 공지내용 입력 후 저장 없이 조회탭으로 이동시. 변경사항은 지워짐.
 {
-   if(sTranId=="cfnSearch"){
+   if(sTranId=="cfnSearch"){  //더블클릭 시
        if(gfnIsUpdateSap(dsNOTICELIST) || gfnIsUpdateSap(dsNOTICEAGLIST) || gfnIsUpdateSap(dsText01) || gfnIsUpdateSap(dsATTACH))
        {
            return gfnConfirm("QOS021");	//변경사항이 있습니다.\n그래도 조회하시겠습니까?
@@ -141,7 +141,7 @@ function cfnBeforeTran(sTranId)
 * @return 없음
 * @memberOf ltsPca400
 */
-function cfnSearch()
+function cfnSearch()  
 {
    var sTranId			= "cfnSearch";
    var sInDS 			= "";
@@ -179,9 +179,7 @@ function cfnSave()
        fnProcUpload(0);	//파일업로드
    }else{
        fnSave();			//저장
-   }	
-
-   
+   }  
    
 }
 
@@ -210,6 +208,7 @@ function cfnNew(obj:Button,  e:ClickEventInfo)
 
 //=======================================================================================
 // 4.CallBack 처리
+// 프로그래밍에서 콜백함수란 객체가 나를 부를 때까지 내 할일을 하고 있는 것. 비동기 방식의 함수.
 //---------------------------------------------------------------------------------------
 /**
 * 설명: CallBack 처리
@@ -276,7 +275,7 @@ function cfnBeforeGrid(objGrd, type, obj:Button,  e:ClickEventInfo)
                gfnClearFileInfoSap();
                
                // 체크된 row를 대상으로 처리되며, 체크되어 있지 않은 경우 현재Row를 기준으로 처리???
-               gfnClearRow(objGrd);				
+               gfnClearRow(objGrd);		// 체크박스, 정렬, 엑셀다운로드 등의 기능이 있음.		
                return false;
                break;
                
@@ -311,10 +310,10 @@ function cfnBeforeGrid(objGrd, type, obj:Button,  e:ClickEventInfo)
                        // 수정된 데이터의 경우 >> _seq, FNAME : 컬럼설정, DOKNR : 컬럼미설정
                        
                        // 수정하려면 dataset의 FILEID 값을 가지고 처리
-                       var sFileId = dsATTACH.getColumn(i, "FILEID");
+                       var sFileId  = dsATTACH.getColumn(i, "FILEID");
                        var nSeqNo 	= dsATTACH.getColumn(i, "SEQNO");
                        var nSeq 	= dsATTACH.getColumn(i, "_seq");
-                       var sFileNm = dsATTACH.getColumn(i, "FNAME");
+                       var sFileNm  = dsATTACH.getColumn(i, "FNAME");
                        var sDoknr 	= dsATTACH.getColumn(i, "DOKNR");
                        
                    gfnTrace("checked i=" + i + " , " + sFileId + " , " + nSeqNo + " , " + nSeq + " , " + sFileNm);
@@ -348,7 +347,6 @@ function cfnBeforeGrid(objGrd, type, obj:Button,  e:ClickEventInfo)
                break;
        }
    }		
-   
 }
 
 /**
@@ -357,9 +355,10 @@ function cfnBeforeGrid(objGrd, type, obj:Button,  e:ClickEventInfo)
 * @return 없음
 * @memberOf ltsPca400
 */
-function cfnBeforeClose()
+function cfnBeforeClose() 
 {
    if(gfnIsUpdateSap(dsNOTICELIST) || gfnIsUpdateSap(dsNOTICEAGLIST) || gfnIsUpdateSap(dsText01) || gfnIsUpdateSap(dsATTACH))
+   
    {
        return false;
    }
@@ -423,7 +422,6 @@ function dsNOTICEAGLIST_oncolumnchanged(obj:Dataset, e:DSColChangeEventInfo)
 */
 function dsText_oncolumnchanged(obj:Dataset, e:DSColChangeEventInfo)
 {
-
    gfnDatasetOnColChangedSap(obj, e);
 }
 
@@ -434,6 +432,7 @@ function dsText_oncolumnchanged(obj:Dataset, e:DSColChangeEventInfo)
 * @return 없음
 * @memberOf ltsPca400
 */
+
 function dsAttach_oncolumnchanged(obj:Dataset, e:DSColChangeEventInfo)
 {
     var nSeq = obj.getColumn(e.row, "_seq");
@@ -480,9 +479,9 @@ function divResult_grdList02_onexpandup(obj:Grid, e:GridMouseEventInfo)
        }
        
        dsATTACH.setColumn(e.row, "FNAME", sFileNm);
-       var sFileId = gfnTrim(dsATTACH.getColumn(e.row, "FILEID"));
+       var sFileId  = gfnTrim(dsATTACH.getColumn(e.row, "FILEID"));  //파일아이디 // 공백제거, 널체크, 구분자제거 기능.
        var nSeq 	= gfnTrim(dsATTACH.getColumn(e.row, "_seq"));
-       var nSeqNo 	= gfnTrim(dsATTACH.getColumn(e.row, "SEQNO"));		
+       var nSeqNo 	= gfnTrim(dsATTACH.getColumn(e.row, "SEQNO"));	 //문서번호	
        var sDoknr 	= gfnTrim(dsATTACH.getColumn(e.row, "DOKNR"));
        var sDesc	= gfnTrim(dsATTACH.getColumn(e.row, "DESCRIPTION"));
        // 수정에 대한 처리제외
@@ -657,7 +656,7 @@ function fnSave(){
    var sSapType;
    
    //수정일경우
-   if(lvObjSend.Ptype == "R"){//ZTEXT
+   if(lvObjSend.Ptype == "R"){ //ZTEXT
        sSapType = "U";
        sSendData		+= "IV_SEQNO="+divResult.edtSEQNO.value;
        
@@ -702,7 +701,7 @@ function divResult_divGita_grdList04_ontextchange(obj:Grid, e:GridEditTextChange
 * @memberOf ltsPca400
 */
 function fnClear(){
-   gfnClearFileInfoSap(); // 파일전송Dataset 초기화처리
+   gfnClearFileInfoSap();  // 파일전송Dataset 초기화처리
    lvFileID = "";		   // 파일ID초기화
    lvObjSend.Ptype = "C";
    dsNOTICELIST.clearData();
