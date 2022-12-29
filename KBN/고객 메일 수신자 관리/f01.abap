@@ -11,53 +11,37 @@
 *&---------------------------------------------------------------------*
 FORM get_contact_data .
 
-  CLEAR: gs_email.
-  REFRESH: gt_email.
-
-*&---------------------------------------------------------------------*
-*& 원본 쿼리
-*& 데이터 누락 원인 찾는 중
-*&---------------------------------------------------------------------*
-
-*  SELECT a~vkorg a~spart a~vkgrp a~kunag b~name1 a~kunnr a~custmail a~custmail_2
-*       a~custmail_3 b~name1 a~custmail2
-*       a~custmail2_2 a~custmail2_3 a~salesman a~salesmail a~salesman2
-*       a~salesmail2 a~salestel a~sendtype
-*       a~mailtype a~comnt
-*    INTO CORRESPONDING FIELDS OF TABLE gt_email
-*    FROM zsed0005t AS a
-*    INNER JOIN kna1 AS b
-*      ON a~kunnr = b~kunnr
-*    WHERE a~vkorg = pa_vkorg
-*      AND a~spart = pa_spart
-*      AND a~vkgrp = pa_vkgrp
-*      AND a~kunag IN so_kunag
-*      AND a~kunnr IN so_kunnr
-*       .
-*&---------------------------------------------------------------------*
-*& 임시 쿼리
-*& 행추가 데이터 잘 쌓이는지
-*&---------------------------------------------------------------------*
-
+*  CLEAR:   gs_email.
+*  REFRESH: gt_email.
+  
   DATA: BEGIN OF lt_tab OCCURS 0.
   DATA: kunnr TYPE kna1-kunnr,
         name1 TYPE kna1-name1.
   DATA: END OF lt_tab.
 
-  SELECT *
-    FROM zsed0005t
+  SELECT a~vkorg a~spart a~vkgrp a~kunag b~name1 a~kunnr a~custmail a~custmail_2
+        a~custmail_3 a~custmail2
+        a~custmail2_2 a~custmail2_3 a~salesman a~salesmail a~salesman2
+        a~salesmail2 a~salestel a~sendtype
+        a~mailtype a~comnt
     INTO CORRESPONDING FIELDS OF TABLE gt_email
-    WHERE vkorg = pa_vkorg
-      AND spart = pa_spart
-      AND vkgrp = pa_vkgrp
-      AND kunag IN so_kunag
-      AND kunnr IN so_kunnr.
+    FROM zsed0005t AS a
+    LEFT OUTER JOIN kna1 AS b
+      ON a~kunnr = b~kunnr
+    WHERE a~vkorg = pa_vkorg
+      AND a~spart = pa_spart
+      AND a~vkgrp = pa_vkgrp
+      AND a~kunag IN so_kunag
+      AND a~kunnr IN so_kunnr .
 
-  SELECT *
-    FROM kna1
-    INTO CORRESPONDING FIELDS OF TABLE lt_tab.
-*
+  SELECT kunnr name1
+    INTO CORRESPONDING FIELDS OF TABLE lt_tab
+    FROM kna1.
+
+
   LOOP AT gt_email.
+
+    PERFORM return_uppercase.
 
     READ TABLE lt_tab WITH KEY kunnr = gt_email-kunnr.
     IF sy-subrc = 0.
@@ -72,19 +56,34 @@ FORM get_contact_data .
     MODIFY gt_email.
     CLEAR lt_tab.
 
+  ENDLOOP.
+
+
+  DATA : lt_celltab TYPE lvc_t_styl,
+          ls_celltab TYPE lvc_s_styl.
+
+  CLEAR: gs_email, lt_celltab, ls_celltab.
+
+  LOOP AT gt_email INTO gs_email.
+
+    DATA(lv_tabix) = sy-tabix.
+    CLEAR: gs_email-celltab, lt_celltab, ls_celltab.
+
     PERFORM editable_fields USING:   'SALESMAN', 'SALESMAIL', 'SALESMAN2', 'SALESMAIL2',
-                                     'CUSTMAIL', 'CUSTMAIL_2', 'CUSTMAIL_3', 'CUSTMAIL2', 'CUSTMAIL2_2', 'CUSTMAIL2_3',
-                                     'SALESTEL', 'SENDTYPE', 'MAILTYPE', 'COMNT'.
+                                      'CUSTMAIL', 'CUSTMAIL_2', 'CUSTMAIL_3', 'CUSTMAIL2', 'CUSTMAIL2_2', 'CUSTMAIL2_3',
+                                      'SALESTEL', 'SENDTYPE', 'MAILTYPE', 'COMNT'.
 
     PERFORM non_editable_fields USING: 'ERDAT', 'ERZET', 'ERNAM', 'AEDAT', 'AEZET', 'AENAM'.
 
-  ENDLOOP.
-
-
-  LOOP AT gt_email INTO gs_email.
-    DATA(lv_tabix) = sy-tabix.
     MODIFY gt_email FROM gs_email INDEX lv_tabix.
+    CLEAR: gs_email.
+
   ENDLOOP.
+
+*  LOOP AT gt_email INTO gs_email.
+*    DATA(lv_tabix) = sy-tabix.
+*    MODIFY gt_email FROM gs_email INDEX lv_tabix.
+*  ENDLOOP.
 
 ENDFORM.
 *&---------------------------------------------------------------------*
@@ -163,9 +162,9 @@ ENDFORM.
 FORM fcat_merge .
 
   DATA : lt_fieldcat TYPE  slis_t_fieldcat_alv,
-         lt_alv_cat  TYPE TABLE OF lvc_s_fcat.
+          lt_alv_cat  TYPE TABLE OF lvc_s_fcat.
   DATA : lv_memory_id_clear TYPE string,
-         lv_memory_id_hash  TYPE hash160.
+          lv_memory_id_hash  TYPE hash160.
 
 * CLEAR BUFFER
   CONCATENATE sy-repid 'GT_EMAIL' INTO lv_memory_id_clear.
@@ -220,7 +219,7 @@ FORM fcat_modify .
         gs_fcat-col_pos = 1.
         gs_fcat-coltext = TEXT-m01.
         gs_fcat-outputlen = 6. "컬럼 사이즈
-        gs_fcat-just = c_c.
+        gs_fcat-just = c_c.    "정렬-가운데
 
       WHEN 'SPART'.
         gs_fcat-col_pos = 2.
@@ -230,97 +229,97 @@ FORM fcat_modify .
       WHEN 'VKGRP'.
         gs_fcat-col_pos = 3.
         gs_fcat-coltext = TEXT-m03.
-        gs_fcat-outputlen = 6. "컬럼 사이즈
+        gs_fcat-outputlen = 8. "컬럼 사이즈
         gs_fcat-just = c_c.
 
       WHEN 'KUNAG'.
         gs_fcat-col_pos = 4.
         gs_fcat-coltext = TEXT-m04.
-        gs_fcat-outputlen = 8. "컬럼 사이즈
+        gs_fcat-outputlen = 10. "컬럼 사이즈
         gs_fcat-just = c_c.
 
       WHEN 'NAME1'.
         gs_fcat-col_pos = 5.
         gs_fcat-coltext = TEXT-m05.
-        gs_fcat-outputlen = 20. "컬럼 사이즈
+        gs_fcat-outputlen = 25. "컬럼 사이즈
         gs_fcat-just = c_l.
 
       WHEN 'CUSTMAIL'.
         gs_fcat-col_pos = 6.
         gs_fcat-coltext = TEXT-m06.
-*        gs_fcat-outputlen = 8. "컬럼 사이즈
+        gs_fcat-outputlen = 30. "컬럼 사이즈
         gs_fcat-just = c_c.
 
       WHEN 'CUSTMAIL_2'.
         gs_fcat-col_pos = 7.
         gs_fcat-coltext = TEXT-m07.
-*        gs_fcat-outputlen = 20. "컬럼 사이즈
+        gs_fcat-outputlen = 30. "컬럼 사이즈
         gs_fcat-just = c_l.
 
       WHEN 'CUSTMAIL_3'.
         gs_fcat-col_pos = 8.
         gs_fcat-coltext = TEXT-m08.
-        gs_fcat-outputlen = 4. "컬럼 사이즈
+        gs_fcat-outputlen = 30. "컬럼 사이즈
         gs_fcat-just = c_c.
 
       WHEN 'KUNNR'.
         gs_fcat-col_pos = 9.
         gs_fcat-coltext = TEXT-m09.
-        gs_fcat-outputlen = 4. "컬럼 사이즈
+        gs_fcat-outputlen = 13. "컬럼 사이즈
         gs_fcat-just = c_c.
 
       WHEN 'NAME2'.
         gs_fcat-col_pos = 11.
         gs_fcat-coltext = TEXT-m28.
-        gs_fcat-outputlen = 8. "컬럼 사이즈
+        gs_fcat-outputlen = 20. "컬럼 사이즈
         gs_fcat-just = c_c.
 
       WHEN 'CUSTMAIL2'.
         gs_fcat-col_pos = 10.
         gs_fcat-coltext = TEXT-m10.
-*        gs_fcat-outputlen = 30. "컬럼 사이즈
+        gs_fcat-outputlen = 30. "컬럼 사이즈
         gs_fcat-just = c_l.
 
       WHEN 'CUSTMAIL2_2'.
         gs_fcat-col_pos = 11.
         gs_fcat-coltext = TEXT-m11.
-*        gs_fcat-outputlen = 8. "컬럼 사이즈
+        gs_fcat-outputlen = 8. "컬럼 사이즈
         gs_fcat-just = c_c.
 
       WHEN 'CUSTMAIL2_3'.
         gs_fcat-col_pos = 12.
         gs_fcat-coltext = TEXT-m12.
-*        gs_fcat-outputlen = 8. "컬럼 사이즈
+        gs_fcat-outputlen = 30. "컬럼 사이즈
         gs_fcat-just = c_c.
 
       WHEN 'SALESMAN'.
         gs_fcat-col_pos = 13.
         gs_fcat-coltext = TEXT-m13.
-*        gs_fcat-outputlen = 6. "컬럼 사이즈
+        gs_fcat-outputlen = 13. "컬럼 사이즈
         gs_fcat-just = c_c.
 
       WHEN 'SALESMAIL'.
         gs_fcat-col_pos = 14.
         gs_fcat-coltext = TEXT-m14.
-*        gs_fcat-outputlen = 30. "컬럼 사이즈
+        gs_fcat-outputlen = 30. "컬럼 사이즈
         gs_fcat-just = c_l.
 
       WHEN 'SALESMAN2'.
         gs_fcat-col_pos = 15.
         gs_fcat-coltext = TEXT-m15.
-*        gs_fcat-outputlen = 8. "컬럼 사이즈
+        gs_fcat-outputlen = 15. "컬럼 사이즈
         gs_fcat-just = c_c.
 
       WHEN 'SALESMAIL2'.
         gs_fcat-col_pos = 16.
         gs_fcat-coltext = TEXT-m16.
-*        gs_fcat-outputlen = 8. "컬럼 사이즈
+        gs_fcat-outputlen = 30. "컬럼 사이즈
         gs_fcat-just = c_c.
 
       WHEN 'SALESTEL'.
         gs_fcat-col_pos = 17.
         gs_fcat-coltext = TEXT-m17.
-*        gs_fcat-outputlen = 8. "컬럼 사이즈
+        gs_fcat-outputlen = 25. "컬럼 사이즈
         gs_fcat-just = c_c.
 
       WHEN 'SENDTYPE'.
@@ -344,32 +343,32 @@ FORM fcat_modify .
       WHEN 'ERDAT'.
         gs_fcat-col_pos = 23.
         gs_fcat-coltext = TEXT-m22.
-        gs_fcat-outputlen = 4.
+        gs_fcat-outputlen = 10.
 
       WHEN 'ERZET'.
         gs_fcat-col_pos = 24.
         gs_fcat-coltext = TEXT-m23.
-        gs_fcat-outputlen = 4.
+        gs_fcat-outputlen = 10.
 
       WHEN 'ERNAM'.
         gs_fcat-col_pos = 25.
         gs_fcat-coltext = TEXT-m24.
-        gs_fcat-outputlen = 4.
+        gs_fcat-outputlen = 10.
 
       WHEN 'AEDAT'.
         gs_fcat-col_pos = 26.
         gs_fcat-coltext = TEXT-m25.
-        gs_fcat-outputlen = 4.
+        gs_fcat-outputlen = 10.
 
       WHEN 'AEZET'.
         gs_fcat-col_pos = 27.
         gs_fcat-coltext = TEXT-m26.
-        gs_fcat-outputlen = 4.
+        gs_fcat-outputlen = 10.
 
       WHEN 'AENAM'.
         gs_fcat-col_pos = 28.
         gs_fcat-coltext = TEXT-m27.
-        gs_fcat-outputlen = 4.
+        gs_fcat-outputlen = 10.
 
     ENDCASE.
 
@@ -530,16 +529,16 @@ ENDFORM.
 FORM add_row .
 
   DATA : lt_celltab TYPE lvc_t_styl,   " sort 테이블
-         ls_celltab TYPE lvc_s_styl.
+          ls_celltab TYPE lvc_s_styl.
 
   CLEAR: gs_email, lt_celltab, ls_celltab.
 
 
 
-  PERFORM editable_fields USING: 'KUNAG', 'KUNNR', 'SALESMAN', 'SALESMAIL', 'SALESMAN2', 'SALESMAIL2',
-                                 'CUSTMAIL', 'CUSTMAIL_2', 'CUSTMAIL_3',
-                                 'CUSTMAIL2', 'CUSTMAIL2_2', 'CUSTMAIL2_3',
-                                 'SALESTEL', 'SENDTYPE', 'MAILTYPE', 'COMNT'.
+  PERFORM editable_fields USING: 'SALESMAN', 'SALESMAIL', 'SALESMAN2', 'SALESMAIL2',
+                                  'CUSTMAIL', 'CUSTMAIL_2', 'CUSTMAIL_3',
+                                  'CUSTMAIL2', 'CUSTMAIL2_2', 'CUSTMAIL2_3',
+                                  'SALESTEL', 'SENDTYPE', 'MAILTYPE', 'COMNT'.
 
   PERFORM non_editable_fields USING: 'ERDAT', 'ERZET', 'ERNAM', 'AEDAT', 'AEZET', 'AENAM'.
 
@@ -592,6 +591,7 @@ FORM check_validation  TABLES  pt_rows  TYPE lvc_t_row.
   DATA:  lt_list LIKE TABLE OF gt_email.
   DATA:  ls_list LIKE LINE OF gt_email.
   DATA:  v_tabix TYPE syst_tabix.
+  DATA:  lv_len(5).
 
   CLEAR: gv_err, gs_email.
   CLEAR : gs_email.
@@ -609,10 +609,10 @@ FORM check_validation  TABLES  pt_rows  TYPE lvc_t_row.
     "중복데이터 체크
     READ TABLE lt_list INTO ls_list
     WITH KEY vkorg = gs_email-vkorg
-             spart = gs_email-spart
-             vkgrp = gs_email-vkgrp
-             kunag = gs_email-kunag
-             kunnr = gs_email-kunnr.
+              spart = gs_email-spart
+              vkgrp = gs_email-vkgrp
+              kunag = gs_email-kunag
+              kunnr = gs_email-kunnr.
 
     IF sy-subrc = 0.
       gv_err = c_x.
@@ -630,6 +630,7 @@ FORM check_validation  TABLES  pt_rows  TYPE lvc_t_row.
     CLEAR : gs_email.
 
     READ TABLE gt_email INDEX ls_rows-index INTO gs_email.
+    PERFORM check_obligation.
 
     " 판매처코드
     " KNVP-VKORG = 영업조직 AND
@@ -642,7 +643,7 @@ FORM check_validation  TABLES  pt_rows  TYPE lvc_t_row.
       WHERE vkorg = gs_email-vkorg
         AND spart = gs_email-spart
         AND kunnr = gs_email-kunag
-         .
+          .
     IF ls_list-kunag IS INITIAL.
       MESSAGE e000 WITH '입력한 판매처가 해당 영업조직에 유효하지 않습니다'.
       CLEAR ls_list-kunag.
@@ -660,14 +661,74 @@ FORM check_validation  TABLES  pt_rows  TYPE lvc_t_row.
         AND spart = gs_email-spart
         AND kunnr = gs_email-kunag
         AND kunnr = gs_email-kunnr
-         .
+          .
     IF ls_list-kunnr IS INITIAL.
       MESSAGE e000 WITH '입력한 납품처가 판매처에 유효하지 않습니다.'.
       CLEAR ls_list-kunnr.
     ENDIF.
 
-  ENDLOOP.
+    " 메일 수신유형
+    IF gs_email-sendtype IS NOT INITIAL.
 
+      SELECT SINGLE domvalue_l
+        FROM dd07v
+        INTO ls_list-domvalue_l
+        WHERE domname = 'ZDSENDTYPE'
+            AND domvalue_l = gs_email-sendtype
+            AND ddlanguage = sy-langu.
+
+      IF sy-subrc <> 0.
+        gv_err = c_x.
+        MESSAGE e000 WITH '유효하지 않은 메일유형입니다.'.
+        CLEAR : ls_list-domvalue_l.
+      ENDIF.
+    ELSE.
+      MESSAGE e000 WITH '메일유형을 입력하세요.'.
+    ENDIF.
+
+    "메일 송신대상
+    IF gs_email-mailtype IS NOT INITIAL.
+
+      SELECT SINGLE domvalue_l
+        FROM dd07v
+        INTO ls_list-domvalue_l
+        WHERE domname = 'ZDMAILTYPE'
+            AND domvalue_l = gs_email-mailtype
+            AND ddlanguage = sy-langu
+        .
+      IF sy-subrc <> 0.
+
+        gv_err = c_x.
+        MESSAGE e000 WITH '메일 송신대상이 유효하지 않습니다.'.
+        CLEAR ls_list-domvalue_l.
+      ENDIF.
+    ENDIF.
+
+    " 메일유형이 1일 경우 판매처 메일주소, 영업담당자 메일주소, 업무담당자 메일주소에 값이 있어야 저장 되도록 한다.
+    " (띄어쓰기로 공란만 입력된 것은 입력하지 않은것으로 보고 메세지 처리)
+    "판매처 메일 주소 1~3 중 값이 있어야함
+
+    IF gs_email-sendtype IS NOT INITIAL.
+      CASE gs_email-sendtype.
+        WHEN '1'.
+
+          IF gs_email-custmail IS INITIAL AND gs_email-custmail_2 IS INITIAL AND gs_email-custmail_3 IS INITIAL.
+            gv_err = c_x.
+            MESSAGE e000 WITH '판매처 메일주소는 필수 입력값입니다. 판매처 메일주소를 입력하세요.'.
+
+          ENDIF.
+
+          IF gs_email-salesmail IS INITIAL.
+            MESSAGE e000 WITH '영업담당자 메일주소를 입력하세요.'.
+
+          ENDIF.
+
+          IF gs_email-salesmail2 IS INITIAL.
+            MESSAGE e000 WITH '업무담당자 메일주소를 입력하세요.'.
+          ENDIF.
+      ENDCASE.
+    ENDIF.
+  ENDLOOP.
 ENDFORM.
 *&---------------------------------------------------------------------*
 *& Form modify_table
@@ -683,7 +744,7 @@ FORM modify_table  TABLES pt_rows TYPE lvc_t_row.
   CLEAR: lv_answer.
 
   DATA:  ls_zsed0005 LIKE zsed0005t.
-  DATA: lt_celltab TYPE lvc_t_styl, " sort 테이블
+  DATA: lt_celltab TYPE lvc_t_styl,
         ls_celltab TYPE lvc_s_styl.
 
   CLEAR: gs_email-celltab, lt_celltab, ls_celltab.
@@ -835,7 +896,7 @@ FORM del_row .
       OTHERS                = 2.
 
   IF lv_answer = '2' OR "NO
-     lv_answer = 'A'.   "취소
+      lv_answer = 'A'.   "취소
     EXIT.
   ENDIF.
 
@@ -846,15 +907,14 @@ FORM del_row .
     IF sy-subrc = 0.
       MESSAGE s000 WITH TEXT-e10.
     ELSE.
-      MESSAGE e000 WITH TEXT-e11.
       EXIT.
     ENDIF.
 
     DELETE FROM  zsed0005t WHERE vkorg = gs_email-vkorg
-                             AND spart = gs_email-spart
-                             AND vkgrp = gs_email-vkgrp
-                             AND kunag = gs_email-kunag
-                             AND kunnr = gs_email-kunnr.
+                              AND spart = gs_email-spart
+                              AND vkgrp = gs_email-vkgrp
+                              AND kunag = gs_email-kunag
+                              AND kunnr = gs_email-kunnr.
 
     IF sy-subrc <> 0.
       CONTINUE.
@@ -862,26 +922,6 @@ FORM del_row .
 
   ENDLOOP.
 
-*&---------------------------------------------------------------------*
-*& 원래 내 거
-*&---------------------------------------------------------------------*
-
-*  DATA: lt_rows TYPE lvc_t_row,
-*        ls_rows LIKE LINE OF lt_rows.
-*  DATA: l_scroll TYPE lvc_s_stbl.
-*
-*  CALL METHOD go_grid->get_selected_rows
-*    IMPORTING
-*      et_index_rows = lt_rows. "alv에서 선택된 라인이 it_rows에 들어간다.
-*
-*  DESCRIBE TABLE lt_rows LINES sy-tfill.  "current number of lines in internal tables.
-*
-*  IF sy-tfill = 0.
-*    MESSAGE i025 WITH '삭제할 행을 선택하세요'.
-*    EXIT.
-*  ELSE.
-*
-*  ENDIF.
 ENDFORM.
 *&---------------------------------------------------------------------*
 *& Form editable_fields
@@ -894,6 +934,8 @@ FORM editable_fields  USING    VALUE(p_field).
 
   DATA: lt_celltab TYPE lvc_t_styl,
         ls_celltab TYPE lvc_s_styl.
+
+*  CLEAR: gs_list, lt_celltab, ls_celltab.
 
   ls_celltab-fieldname = p_field.
   ls_celltab-style = cl_gui_alv_grid=>mc_style_enabled.
@@ -931,7 +973,7 @@ ENDFORM.
 FORM handle_data_changed  USING pv_data_changed TYPE REF TO cl_alv_changed_data_protocol.
 
   DATA : ls_ins_cell TYPE lvc_s_moce,
-         ls_mod_cell TYPE lvc_s_modi.
+          ls_mod_cell TYPE lvc_s_modi.
 
   DATA: lt_ins_cell TYPE lvc_t_moce,
         lt_mod_cell TYPE lvc_t_modi.
@@ -957,5 +999,55 @@ FORM handle_data_changed  USING pv_data_changed TYPE REF TO cl_alv_changed_data_
 
   ENDLOOP.
 
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form check_obligation
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+*& -->  p1        text
+*& <--  p2        text
+*&---------------------------------------------------------------------*
+FORM check_obligation .
+
+  IF gs_email-vkorg IS INITIAL.
+    MESSAGE e000 WITH '영업조직은 필수 입력값입니다. 영업조직을 입력하십시오.'.
+  ENDIF.
+
+  IF gs_email-spart IS INITIAL.
+    MESSAGE e000 WITH '제품군은 필수 입력값입니다. 제품군을 입력하십시오.'.
+  ENDIF.
+
+  IF gs_email-vkgrp IS INITIAL.
+    MESSAGE e000 WITH '영업그룹은 필수 입력값입니다. 영업그룹을 입력하십시오.'.
+  ENDIF.
+
+  IF gs_email-kunag IS INITIAL.
+    MESSAGE e000 WITH '판매처는 필수 입력값입니다. 판매처를 입력하십시오.'.
+  ENDIF.
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form return_uppercase
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+*& -->  p1        text
+*& <--  p2        text
+*&---------------------------------------------------------------------*
+FORM return_uppercase .
+
+  CALL FUNCTION 'CONVERSION_EXIT_ALPHA_INPUT'
+    EXPORTING
+      input  = gt_email-kunag
+    IMPORTING
+      output = gt_email-kunag.
+
+  CALL FUNCTION 'CONVERSION_EXIT_ALPHA_INPUT'
+    EXPORTING
+      input  = gt_email-kunnr
+    IMPORTING
+      output = gt_email-kunnr.
 
 ENDFORM.
