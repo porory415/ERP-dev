@@ -13,26 +13,43 @@ FORM get_contact_data .
 
 *  CLEAR:   gs_email.
 *  REFRESH: gt_email.
-  
+
   DATA: BEGIN OF lt_tab OCCURS 0.
   DATA: kunnr TYPE kna1-kunnr,
         name1 TYPE kna1-name1.
   DATA: END OF lt_tab.
 
-  SELECT a~vkorg a~spart a~vkgrp a~kunag b~name1 a~kunnr a~custmail a~custmail_2
-        a~custmail_3 a~custmail2
-        a~custmail2_2 a~custmail2_3 a~salesman a~salesmail a~salesman2
-        a~salesmail2 a~salestel a~sendtype
-        a~mailtype a~comnt
+  SELECT vkorg                "영업조직
+          spart                "제품군
+          vkgrp                "영업그룹
+          a~kunag              "판매처
+*         b~name1              "판매처명 (kna1)
+          custmail             "판매처 메일주소1
+          custmail_2           "판매처 메일주소2
+          custmail_3           "판매처 메일주소3
+          a~kunnr              "납품처
+*         b~name2              "납품처명 (kna1)
+          custmail2            "납품처 메일주소1
+          custmail2_2          "납품처 메일주소2
+          custmail2_3          "납품처 메일주소3
+          salesman             "영업담당자명
+          salesmail            "영업담당자 메일주소
+          salesman2            "업무담당자명
+          salesmail2           "업무담당자 메일주소
+          salestel             "업무담당자 전화번호
+          sendtype             "메일유형
+          mailtype             "처리대상
+          comnt                "비고
     INTO CORRESPONDING FIELDS OF TABLE gt_email
     FROM zsed0005t AS a
-    LEFT OUTER JOIN kna1 AS b
-      ON a~kunnr = b~kunnr
-    WHERE a~vkorg = pa_vkorg
-      AND a~spart = pa_spart
-      AND a~vkgrp = pa_vkgrp
-      AND a~kunag IN so_kunag
-      AND a~kunnr IN so_kunnr .
+      LEFT OUTER JOIN kna1 AS b
+        ON a~kunnr = b~kunnr
+      WHERE vkorg = pa_vkorg
+        AND spart = pa_spart
+        AND vkgrp = pa_vkgrp
+        AND a~kunag IN so_kunag  "판매처
+        AND a~kunnr IN so_kunnr. "납품처
+
 
   SELECT kunnr name1
     INTO CORRESPONDING FIELDS OF TABLE lt_tab
@@ -46,11 +63,14 @@ FORM get_contact_data .
     READ TABLE lt_tab WITH KEY kunnr = gt_email-kunnr.
     IF sy-subrc = 0.
       gt_email-name2 = lt_tab-name1.
+*      CLEAR LT_TAB-NAME1.
+
     ENDIF.
 
     READ TABLE lt_tab WITH KEY kunnr = gt_email-kunag.
     IF sy-subrc = 0.
       gt_email-name1 = lt_tab-name1.
+*      CLEAR LT_TAB-NAME1.
     ENDIF.
 
     MODIFY gt_email.
@@ -134,7 +154,7 @@ FORM set_grid_layout .
   gs_layo-sel_mode = c_a.
   gs_layo-zebra = c_x.
   gs_layo-stylefname = 'CELLTAB'. " lvc_t_style 테이블로 선언한 변수명을 파라미터로
-  gs_layo-cwidth_opt = 'X'.
+*  gs_layo-cwidth_opt = 'X'.
 
 ENDFORM.
 *&---------------------------------------------------------------------*
@@ -225,6 +245,8 @@ FORM fcat_modify .
         gs_fcat-col_pos = 2.
         gs_fcat-coltext = TEXT-m02.
         gs_fcat-outputlen = 6. "컬럼 사이즈
+        gs_fcat-just = c_c.    "정렬-가운데
+
 
       WHEN 'VKGRP'.
         gs_fcat-col_pos = 3.
@@ -241,8 +263,8 @@ FORM fcat_modify .
       WHEN 'NAME1'.
         gs_fcat-col_pos = 5.
         gs_fcat-coltext = TEXT-m05.
-        gs_fcat-outputlen = 25. "컬럼 사이즈
-        gs_fcat-just = c_l.
+        gs_fcat-outputlen = 20. "컬럼 사이즈
+        gs_fcat-just = c_c.
 
       WHEN 'CUSTMAIL'.
         gs_fcat-col_pos = 6.
@@ -254,7 +276,7 @@ FORM fcat_modify .
         gs_fcat-col_pos = 7.
         gs_fcat-coltext = TEXT-m07.
         gs_fcat-outputlen = 30. "컬럼 사이즈
-        gs_fcat-just = c_l.
+        gs_fcat-just = c_c.
 
       WHEN 'CUSTMAIL_3'.
         gs_fcat-col_pos = 8.
@@ -269,106 +291,114 @@ FORM fcat_modify .
         gs_fcat-just = c_c.
 
       WHEN 'NAME2'.
-        gs_fcat-col_pos = 11.
+        gs_fcat-col_pos = 10.
         gs_fcat-coltext = TEXT-m28.
         gs_fcat-outputlen = 20. "컬럼 사이즈
         gs_fcat-just = c_c.
 
+
       WHEN 'CUSTMAIL2'.
-        gs_fcat-col_pos = 10.
+        gs_fcat-col_pos = 11.
         gs_fcat-coltext = TEXT-m10.
-        gs_fcat-outputlen = 30. "컬럼 사이즈
-        gs_fcat-just = c_l.
+        gs_fcat-outputlen = 100. "컬럼 사이즈
+        gs_fcat-just = c_c.
 
       WHEN 'CUSTMAIL2_2'.
-        gs_fcat-col_pos = 11.
+        gs_fcat-col_pos = 12.
         gs_fcat-coltext = TEXT-m11.
-        gs_fcat-outputlen = 8. "컬럼 사이즈
+        gs_fcat-outputlen = 30. "컬럼 사이즈
         gs_fcat-just = c_c.
 
       WHEN 'CUSTMAIL2_3'.
-        gs_fcat-col_pos = 12.
+        gs_fcat-col_pos = 13.
         gs_fcat-coltext = TEXT-m12.
         gs_fcat-outputlen = 30. "컬럼 사이즈
         gs_fcat-just = c_c.
 
       WHEN 'SALESMAN'.
-        gs_fcat-col_pos = 13.
+        gs_fcat-col_pos = 14.
         gs_fcat-coltext = TEXT-m13.
         gs_fcat-outputlen = 13. "컬럼 사이즈
         gs_fcat-just = c_c.
 
       WHEN 'SALESMAIL'.
-        gs_fcat-col_pos = 14.
+        gs_fcat-col_pos = 15.
         gs_fcat-coltext = TEXT-m14.
         gs_fcat-outputlen = 30. "컬럼 사이즈
-        gs_fcat-just = c_l.
+        gs_fcat-just = c_c.
 
       WHEN 'SALESMAN2'.
-        gs_fcat-col_pos = 15.
+        gs_fcat-col_pos = 16.
         gs_fcat-coltext = TEXT-m15.
         gs_fcat-outputlen = 15. "컬럼 사이즈
         gs_fcat-just = c_c.
 
       WHEN 'SALESMAIL2'.
-        gs_fcat-col_pos = 16.
+        gs_fcat-col_pos = 17.
         gs_fcat-coltext = TEXT-m16.
         gs_fcat-outputlen = 30. "컬럼 사이즈
         gs_fcat-just = c_c.
 
       WHEN 'SALESTEL'.
-        gs_fcat-col_pos = 17.
+        gs_fcat-col_pos = 18.
         gs_fcat-coltext = TEXT-m17.
         gs_fcat-outputlen = 25. "컬럼 사이즈
         gs_fcat-just = c_c.
 
       WHEN 'SENDTYPE'.
-        gs_fcat-col_pos = 18.
+        gs_fcat-col_pos = 19.
         gs_fcat-coltext = TEXT-m18.
-*        gs_fcat-outputlen = 8. "컬럼 사이즈
+        gs_fcat-outputlen = 11. "컬럼 사이즈
         gs_fcat-just = c_c.
 
       WHEN 'MAILTYPE'.
-        gs_fcat-col_pos = 19.
+        gs_fcat-col_pos = 20.
         gs_fcat-coltext = TEXT-m19.
-*        gs_fcat-outputlen = 8. "컬럼 사이즈
+        gs_fcat-outputlen = 15. "컬럼 사이즈
         gs_fcat-just = c_c.
 
       WHEN 'COMNT'.
-        gs_fcat-col_pos = 20.
+        gs_fcat-col_pos = 21.
         gs_fcat-coltext = TEXT-m20.
-*        gs_fcat-outputlen = 8. "컬럼 사이즈
+        gs_fcat-outputlen = 20. "컬럼 사이즈
+        gs_fcat-just = c_c.
         gs_fcat-just = c_c.
 
       WHEN 'ERDAT'.
-        gs_fcat-col_pos = 23.
+        gs_fcat-col_pos = 22.
         gs_fcat-coltext = TEXT-m22.
         gs_fcat-outputlen = 10.
+        gs_fcat-just = c_c.
 
       WHEN 'ERZET'.
-        gs_fcat-col_pos = 24.
+        gs_fcat-col_pos = 23.
         gs_fcat-coltext = TEXT-m23.
         gs_fcat-outputlen = 10.
+        gs_fcat-just = c_c.
 
       WHEN 'ERNAM'.
-        gs_fcat-col_pos = 25.
+        gs_fcat-col_pos = 24.
         gs_fcat-coltext = TEXT-m24.
         gs_fcat-outputlen = 10.
+        gs_fcat-just = c_c.
 
       WHEN 'AEDAT'.
-        gs_fcat-col_pos = 26.
+        gs_fcat-col_pos = 25.
         gs_fcat-coltext = TEXT-m25.
         gs_fcat-outputlen = 10.
+        gs_fcat-just = c_c.
 
       WHEN 'AEZET'.
-        gs_fcat-col_pos = 27.
+        gs_fcat-col_pos = 26.
         gs_fcat-coltext = TEXT-m26.
         gs_fcat-outputlen = 10.
+        gs_fcat-just = c_c.
 
       WHEN 'AENAM'.
-        gs_fcat-col_pos = 28.
+        gs_fcat-col_pos = 27.
         gs_fcat-coltext = TEXT-m27.
         gs_fcat-outputlen = 10.
+        gs_fcat-just = c_c.
 
     ENDCASE.
 
@@ -533,22 +563,20 @@ FORM add_row .
 
   CLEAR: gs_email, lt_celltab, ls_celltab.
 
-
-
-  PERFORM editable_fields USING: 'SALESMAN', 'SALESMAIL', 'SALESMAN2', 'SALESMAIL2',
-                                  'CUSTMAIL', 'CUSTMAIL_2', 'CUSTMAIL_3',
-                                  'CUSTMAIL2', 'CUSTMAIL2_2', 'CUSTMAIL2_3',
-                                  'SALESTEL', 'SENDTYPE', 'MAILTYPE', 'COMNT'.
-
-  PERFORM non_editable_fields USING: 'ERDAT', 'ERZET', 'ERNAM', 'AEDAT', 'AEZET', 'AENAM'.
-
   gs_email-vkorg = pa_vkorg.
   gs_email-spart = pa_spart.
   gs_email-vkgrp = pa_vkgrp.
 
+
+  PERFORM editable_fields USING: 'KUNAG', 'KUNNR', 'SALESMAN', 'SALESMAIL', 'SALESMAN2', 'SALESMAIL2',
+                                  'CUSTMAIL', 'CUSTMAIL_2', 'CUSTMAIL_3',
+                                  'CUSTMAIL2', 'CUSTMAIL2_2', 'CUSTMAIL2_3',
+                                  'SALESTEL', 'SENDTYPE', 'MAILTYPE', 'COMNT'.
+
+  PERFORM non_editable_fields USING: 'NAME1', 'NAME2', 'ERDAT', 'ERZET', 'ERNAM', 'AEDAT', 'AEZET', 'AENAM'.
+
+
   APPEND gs_email TO gt_email.
-*  MODIFY gt_email FROM gs_email INDEX sy-tabix.
-  CLEAR gs_email.
 
 ENDFORM.
 *&---------------------------------------------------------------------*
@@ -704,7 +732,7 @@ FORM check_validation  TABLES  pt_rows  TYPE lvc_t_row.
       ENDIF.
     ENDIF.
 
-    " 메일유형이 1일 경우 판매처 메일주소, 영업담당자 메일주소, 업무담당자 메일주소에 값이 있어야 저장 되도록 한다.
+    " - 메일유형이 1일 경우 판매처 메일주소, 영업담당자 메일주소, 업무담당자 메일주소에 값이 있어야 저장 되도록 한다.
     " (띄어쓰기로 공란만 입력된 것은 입력하지 않은것으로 보고 메세지 처리)
     "판매처 메일 주소 1~3 중 값이 있어야함
 
@@ -769,10 +797,8 @@ FORM modify_table  TABLES pt_rows TYPE lvc_t_row.
   ENDIF.
 
   LOOP AT pt_rows INTO ls_rows.
-    CLEAR: gs_email.
+    CLEAR: gs_email, ls_zsed0005.
     READ TABLE gt_email INDEX ls_rows-index INTO gs_email.
-
-    CLEAR: ls_zsed0005.
 
     SELECT SINGLE *
       INTO CORRESPONDING FIELDS OF ls_zsed0005
@@ -780,7 +806,7 @@ FORM modify_table  TABLES pt_rows TYPE lvc_t_row.
       WHERE vkorg = gs_email-vkorg
         AND spart = gs_email-spart
         AND vkgrp = gs_email-vkgrp
-        AND kunag = gs_email-kunag
+        AND kunag = gs_email-kunnr
         AND kunnr = gs_email-kunnr.
 
     IF sy-subrc <> 0.   "데이터가 기존에 없음.
@@ -794,9 +820,9 @@ FORM modify_table  TABLES pt_rows TYPE lvc_t_row.
       gs_email-erzet = ls_zsed0005-erzet.
       gs_email-ernam = ls_zsed0005-ernam.
       MOVE-CORRESPONDING gs_email TO ls_zsed0005.
-      INSERT zsed0005t FROM ls_zsed0005.
+      INSERT zsed0005t from ls_zsed0005.
 
-*      MESSAGE s000 WITH '저장되었습니다.'.
+      MESSAGE s000 WITH '저장되었습니다.'.
 
       IF sy-subrc = 0.
         MESSAGE s024.
@@ -999,6 +1025,8 @@ FORM handle_data_changed  USING pv_data_changed TYPE REF TO cl_alv_changed_data_
 
   ENDLOOP.
 
+  perform email_to_uppercase.
+
 
 ENDFORM.
 *&---------------------------------------------------------------------*
@@ -1049,5 +1077,17 @@ FORM return_uppercase .
       input  = gt_email-kunnr
     IMPORTING
       output = gt_email-kunnr.
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form email_to_uppercase
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+*& -->  p1        text
+*& <--  p2        text
+*&---------------------------------------------------------------------*
+FORM email_to_uppercase .
+
 
 ENDFORM.

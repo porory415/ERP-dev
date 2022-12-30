@@ -44,8 +44,11 @@ DATA: BEGIN OF gt_email occurs 0.
 *        sendtype    TYPE         zsed0005t-sendtype,
 *        mailtype    TYPE         zsed0005t-mailtype,
 *        comnt       TYPE         zsed0005t-comnt,
-     data: name1 type kna1-name1,
-           name2 type kna1-name1,
+     DATA : name1 TYPE c LENGTH 35.
+     DATA : name2 TYPE c LENGTH 35,
+*     DATA : NAME1 TYPE KNA1-NAME1.
+*     DATA : NAME2 TYPE KNA1-NAME1,
+           domvalue_l like dd07v-domvalue_l,
            mark(1),
            celltab TYPE lvc_t_styl.
      data: END OF gt_email.
