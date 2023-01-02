@@ -46,8 +46,6 @@ DATA: BEGIN OF gt_email occurs 0.
 *        comnt       TYPE         zsed0005t-comnt,
      DATA : name1 TYPE c LENGTH 35.
      DATA : name2 TYPE c LENGTH 35,
-*     DATA : NAME1 TYPE KNA1-NAME1.
-*     DATA : NAME2 TYPE KNA1-NAME1,
            domvalue_l like dd07v-domvalue_l,
            mark(1),
            celltab TYPE lvc_t_styl.
