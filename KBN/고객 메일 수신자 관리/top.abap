@@ -4,12 +4,13 @@
 REPORT zkedu0005 NO STANDARD PAGE HEADING MESSAGE-ID zmsd.
 
 TABLES: zsed0005t.
+CLASS: lcl_event_handler DEFINITION DEFERRED.
 
 *--------------------------------------------------------------------*
 * SCREEN
 *--------------------------------------------------------------------*
-DATA : gv_okcode   LIKE sy-ucomm,
-       gv_saveok   LIKE sy-ucomm.
+DATA : gv_okcode LIKE sy-ucomm,
+       gv_saveok LIKE sy-ucomm.
 
 * SELECTED ROWS
 DATA : gt_rows TYPE lvc_t_row.
@@ -23,8 +24,8 @@ DATA : gv_err.  "X:Error
 ************************************************************************
 * The Declaration of Variables
 ************************************************************************
-DATA: BEGIN OF gt_email occurs 0.
-      include STRUCTURE zsed0005t.
+DATA: BEGIN OF gt_email OCCURS 0.
+        INCLUDE STRUCTURE zsed0005t.
 *        vkorg       TYPE         zsed0005t-vkorg,
 *        spart       TYPE         zsed0005t-spart,
 *        vkgrp       TYPE         zsed0005t-vkgrp,
@@ -44,30 +45,30 @@ DATA: BEGIN OF gt_email occurs 0.
 *        sendtype    TYPE         zsed0005t-sendtype,
 *        mailtype    TYPE         zsed0005t-mailtype,
 *        comnt       TYPE         zsed0005t-comnt,
-     DATA : name1 TYPE c LENGTH 35.
-     DATA : name2 TYPE c LENGTH 35,
-           domvalue_l like dd07v-domvalue_l,
-           mark(1),
-           celltab TYPE lvc_t_styl.
-     data: END OF gt_email.
-     data: gs_email like line of gt_email.
-*      data: gt_email LIKE TABLE OF gs_email.
+DATA : name1 TYPE c LENGTH 30.
+DATA : name2 TYPE c LENGTH 30,
+       domvalue_l LIKE dd07v-domvalue_l,
+       mark(1),
+       celltab    TYPE lvc_t_styl.
+DATA: END OF gt_email.
+DATA: gs_email LIKE LINE OF gt_email.
 
 
 
 *&---------------------------------------------------------------------*
 *& ALV varaibles
 *&---------------------------------------------------------------------*
-DATA: gv_cont_name TYPE scrfname VALUE 'CCONT',
-      go_ccont     TYPE REF TO cl_gui_custom_container,
-      go_grid      TYPE REF TO cl_gui_alv_grid,
-      gs_layo      TYPE        lvc_s_layo,
-      gs_fcat      TYPE        lvc_s_fcat,
-      gt_fcat      TYPE        lvc_t_fcat,
-      gs_stbl      TYPE        lvc_s_stbl,
-      gs_variant   TYPE        disvariant,
-      gs_exclude   TYPE        ui_func,
-      gt_exclude   TYPE        ui_functions.
+DATA: gv_cont_name     TYPE scrfname VALUE 'CCONT',
+      go_ccont         TYPE REF TO cl_gui_custom_container,
+      go_grid          TYPE REF TO cl_gui_alv_grid,
+      go_event_handler TYPE REF TO lcl_event_handler,
+      gs_layo          TYPE        lvc_s_layo,
+      gs_fcat          TYPE        lvc_s_fcat,
+      gt_fcat          TYPE        lvc_t_fcat,
+      gs_stbl          TYPE        lvc_s_stbl,
+      gs_variant       TYPE        disvariant,
+      gs_exclude       TYPE        ui_func,
+      gt_exclude       TYPE        ui_functions.
 
 *--------------------------------------------------------------------*
 * CONSTANTS

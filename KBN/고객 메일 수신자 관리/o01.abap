@@ -23,8 +23,7 @@ MODULE display_alv_0100 OUTPUT.
     PERFORM set_grid_layout.
     PERFORM set_grid_exclude.
     PERFORM set_grid_fieldcat.
-*    PERFORM set_event_handle.
-*    PERFORM alv_document.
+    PERFORM set_event_handle.
     PERFORM display_grid.
   ELSE.
     PERFORM refresh_grid.

@@ -40,6 +40,12 @@ FORM get_contact_data .
           sendtype             "메일유형
           mailtype             "처리대상
           comnt                "비고
+            a~aedat
+            a~aezet
+            a~ernam
+            a~erdat
+            a~aenam
+            a~erzet
     INTO CORRESPONDING FIELDS OF TABLE gt_email
     FROM zsed0005t AS a
       LEFT OUTER JOIN kna1 AS b
@@ -58,19 +64,17 @@ FORM get_contact_data .
 
   LOOP AT gt_email.
 
-    PERFORM return_uppercase.
+*    PERFORM return_uppercase.
 
     READ TABLE lt_tab WITH KEY kunnr = gt_email-kunnr.
     IF sy-subrc = 0.
       gt_email-name2 = lt_tab-name1.
-*      CLEAR LT_TAB-NAME1.
 
     ENDIF.
 
     READ TABLE lt_tab WITH KEY kunnr = gt_email-kunag.
     IF sy-subrc = 0.
       gt_email-name1 = lt_tab-name1.
-*      CLEAR LT_TAB-NAME1.
     ENDIF.
 
     MODIFY gt_email.
@@ -78,7 +82,7 @@ FORM get_contact_data .
 
   ENDLOOP.
 
-  perform edit_control.
+  PERFORM edit_control.
 
 ENDFORM.
 *&---------------------------------------------------------------------*
@@ -113,6 +117,10 @@ FORM create_instance .
   CALL METHOD go_grid->set_ready_for_input " alv 수정 모드로 변경 (CELL Tab 쓰려면 꼭 있어야함.)
     EXPORTING
       i_ready_for_input = 1.
+
+  CALL METHOD go_grid->register_edit_event
+    EXPORTING
+      i_event_id = cl_gui_alv_grid=>mc_evt_modified.
 
 ENDFORM.
 *&---------------------------------------------------------------------*
@@ -275,7 +283,7 @@ FORM fcat_modify .
       WHEN 'CUSTMAIL2'.
         gs_fcat-col_pos = 11.
         gs_fcat-coltext = TEXT-m10.
-        gs_fcat-outputlen = 100. "컬럼 사이즈
+        gs_fcat-outputlen = 30. "컬럼 사이즈
         gs_fcat-just = c_c.
 
       WHEN 'CUSTMAIL2_2'.
@@ -375,6 +383,20 @@ FORM fcat_modify .
         gs_fcat-outputlen = 10.
         gs_fcat-just = c_c.
 
+      WHEN 'MARK'.
+        gs_fcat-col_pos = 28.
+        gs_fcat-coltext = 'MARK'.
+        gs_fcat-outputlen = 10.
+        gs_fcat-just = c_c.
+        gs_fcat-no_out = c_x.
+
+      WHEN 'DOMVALUE_L'.
+        gs_fcat-col_pos = 29.
+        gs_fcat-coltext = 'DOMVALUE_L'.
+        gs_fcat-outputlen = 10.
+        gs_fcat-just = c_c.
+        gs_fcat-no_out = c_x.
+
     ENDCASE.
 
     MODIFY gt_fcat FROM gs_fcat.
@@ -454,7 +476,7 @@ FORM check_input_validation .
       WHERE vkorg = pa_vkorg.
 
     IF sy-subrc <> 0.
-      MESSAGE e000 WITH TEXT-e01.
+      MESSAGE e000 WITH TEXT-e01.   "영업조직과 제품군이 유효하지 않습니다
     ENDIF.
 
   ENDIF.
@@ -467,7 +489,7 @@ FORM check_input_validation .
       WHERE spart = pa_spart.
 
     IF sy-subrc <> 0.
-      MESSAGE e000 WITH TEXT-e01.
+      MESSAGE e000 WITH TEXT-e01.   "영업조직과 제품군이 유효하지 않습니다
     ENDIF.
 
   ENDIF.
@@ -479,10 +501,9 @@ FORM check_input_validation .
       INTO gt_email-vkgrp
       WHERE vkgrp = pa_vkgrp.
     IF sy-subrc <> 0.
-      MESSAGE e000 WITH TEXT-e02.
+      MESSAGE e000 WITH TEXT-e02.   "입력한 영업그룹이 유효하지 않습니다
     ENDIF.
   ENDIF.
-
 
 ENDFORM.
 *&---------------------------------------------------------------------*
@@ -520,6 +541,8 @@ FORM set_grid_exclude .
   gs_exclude = cl_gui_alv_grid=>mc_fc_loc_undo.
   APPEND gs_exclude TO gt_exclude.
   gs_exclude = cl_gui_alv_grid=>mc_fc_info. "이거 추가함.
+  APPEND gs_exclude TO gt_exclude.
+  gs_exclude = cl_gui_alv_grid=>mc_fc_refresh.  "이거 추가함.
   APPEND gs_exclude TO gt_exclude.
 
 ENDFORM.
@@ -619,8 +642,8 @@ FORM check_validation  TABLES  pt_rows  TYPE lvc_t_row.
 
     IF sy-subrc = 0.
       gv_err = c_x.
-      MESSAGE e031 DISPLAY LIKE 'E'.
-*      MODIFY gt_email FROM gs_email INDEX v_tabix.
+      MESSAGE e031 DISPLAY LIKE 'E'.  "중복데이터를 입력하였습니다.
+      MODIFY gt_email FROM gs_email INDEX v_tabix.
     ENDIF.
 
   ENDLOOP.
@@ -635,19 +658,7 @@ FORM check_validation  TABLES  pt_rows  TYPE lvc_t_row.
     READ TABLE gt_email INDEX ls_rows-index INTO gs_email.
     PERFORM check_obligation.
 
-    " 판매처코드
-    " KNVP-VKORG = 영업조직 AND
-    " KNVP-SPART = 제품군 AND
-    " KNVP-KUNNR = 판매처 AND KNVP-PARVW = 'AG'
-    " 없을 경우 메세지 처리.
-    SELECT SINGLE kunnr
-      FROM knvp
-      INTO ls_list-kunag
-      WHERE vkorg = gs_email-vkorg
-        AND spart = gs_email-spart
-        AND kunnr = gs_email-kunag
-          .
-    IF ls_list-kunag IS INITIAL.
+    IF gs_email-kunag IS INITIAL.
       MESSAGE e029 DISPLAY LIKE 'E'.   "판매처는 필수값입니다.
     ELSE.
       CALL FUNCTION 'CONVERSION_EXIT_ALPHA_INPUT'
@@ -655,7 +666,24 @@ FORM check_validation  TABLES  pt_rows  TYPE lvc_t_row.
           input  = gs_email-kunag
         IMPORTING
           output = gs_email-kunag.
+      " 판매처코드
+      " KNVP-VKORG = 영업조직 AND
+      " KNVP-SPART = 제품군 AND
+      " KNVP-KUNNR = 판매처 AND KNVP-PARVW = 'AG'
+      " 없을 경우 메세지 처리.
+      SELECT SINGLE kunnr
+        FROM knvp
+        INTO ls_list-kunag
+        WHERE vkorg = gs_email-vkorg
+          AND spart = gs_email-spart
+          AND kunnr = gs_email-kunag  .
+
+      IF ls_list-kunag IS INITIAL.
+        MESSAGE e000 WITH '입력한 판매처가 해당 영업조직에 유효하지 않습니다'.
+        CLEAR ls_list-kunag.
+      ENDIF.
     ENDIF.
+
 
     " 납품처코드
     " KNVP-VKORG = 영업조직 AND
@@ -691,7 +719,7 @@ FORM check_validation  TABLES  pt_rows  TYPE lvc_t_row.
         CLEAR : ls_list-domvalue_l.
       ENDIF.
     ELSE.
-      MESSAGE e000 WITH '메일유형을 입력하세요.'.
+      MESSAGE e000 WITH '메일유형은 필수 입력값입니다. 메일유형을 입력하십시오.'.
     ENDIF.
 
     "메일 송신대상
@@ -712,30 +740,47 @@ FORM check_validation  TABLES  pt_rows  TYPE lvc_t_row.
       ENDIF.
     ENDIF.
 
-    " - 메일유형이 1일 경우 판매처 메일주소, 영업담당자 메일주소, 업무담당자 메일주소에 값이 있어야 저장 되도록 한다.
+    " 메일유형이 1일 경우 판매처 메일주소, 영업담당자 메일주소, 업무담당자 메일주소에 값이 있어야 저장 되도록 한다.
     " (띄어쓰기로 공란만 입력된 것은 입력하지 않은것으로 보고 메세지 처리)
-    "판매처 메일 주소 1~3 중 값이 있어야함
+    " 판매처 메일 주소 1~3 중 값이 있어야함
 
     IF gs_email-sendtype IS NOT INITIAL.
       CASE gs_email-sendtype.
         WHEN '1'.
 
-          IF gs_email-custmail IS INITIAL AND gs_email-custmail_2 IS INITIAL AND gs_email-custmail_3 IS INITIAL.
+          IF gs_email-custmail IS INITIAL AND gs_email-custmail_2 IS INITIAL AND gs_email-custmail_3 IS INITIAL.  "판매처 메일주소
             gv_err = c_x.
-            MESSAGE e000 WITH '판매처 메일주소는 필수 입력값입니다. 판매처 메일주소를 입력하세요.'.
-
+            MESSAGE e000 WITH '판매처 메일주소는 필수 입력값입니다.'.
           ENDIF.
 
-          IF gs_email-salesmail IS INITIAL.
+          IF gs_email-salesmail IS INITIAL.  "영업담당자 메일주소
             MESSAGE e000 WITH '영업담당자 메일주소를 입력하세요.'.
 
           ENDIF.
 
+          IF gs_email-salesmail2 IS INITIAL.  "업무담당자 메일주소
+            MESSAGE e000 WITH '업무담당자 메일주소를 입력하세요.'.
+          ENDIF.
+
+        WHEN '2'.
+          IF gs_email-custmail IS INITIAL AND gs_email-custmail_2 IS INITIAL AND gs_email-custmail_3 IS INITIAL.
+            gv_err = c_x.
+            MESSAGE e000 WITH '판매처 메일주소는 필수 입력값입니다'.
+          ENDIF.
+          IF gs_email-custmail2 IS INITIAL AND gs_email-custmail2_2 IS INITIAL AND gs_email-custmail2_3 IS INITIAL.
+            gv_err = c_x.
+            MESSAGE e000 WITH '납품처 메일주소는 필수 입력값입니다.'.
+          ENDIF.
+
+          IF gs_email-salesmail IS INITIAL.
+            MESSAGE e000 WITH '영업담당자 메일주소를 입력하세요.'.
+          ENDIF.
           IF gs_email-salesmail2 IS INITIAL.
             MESSAGE e000 WITH '업무담당자 메일주소를 입력하세요.'.
           ENDIF.
       ENDCASE.
     ENDIF.
+
   ENDLOOP.
 ENDFORM.
 *&---------------------------------------------------------------------*
@@ -751,7 +796,7 @@ FORM modify_table  TABLES pt_rows TYPE lvc_t_row.
   DATA:  lv_answer(1).
   CLEAR: lv_answer.
 
-  DATA:  ls_zsed0005 LIKE zsed0005t.
+  DATA: ls_zsed0005 LIKE zsed0005t.
   DATA: lt_celltab TYPE lvc_t_styl,
         ls_celltab TYPE lvc_s_styl.
 
@@ -761,7 +806,7 @@ FORM modify_table  TABLES pt_rows TYPE lvc_t_row.
 * 행 저장 확인 팝업
   CALL FUNCTION 'POPUP_TO_CONFIRM'
     EXPORTING
-      text_question         = TEXT-i02
+      text_question         = TEXT-i02   "선택한 행을 저장하시겠습니까?
       text_button_1         = 'Yes'
       text_button_2         = 'No'
       default_button        = '1'
@@ -774,90 +819,57 @@ FORM modify_table  TABLES pt_rows TYPE lvc_t_row.
 
   IF lv_answer = '2' OR lv_answer = '0'.
     EXIT.
+  ELSE.
+    MESSAGE s000 WITH '성공적으로 저장하였습니다.'.
   ENDIF.
 
-  LOOP AT pt_rows INTO ls_rows.
-    CLEAR: gs_email, ls_zsed0005.
+  LOOP AT pt_rows INTO ls_rows.     "pt_rows's actual parameter == gt_rows
+
+    CLEAR : gs_email.
     READ TABLE gt_email INDEX ls_rows-index INTO gs_email.
+    CLEAR:ls_zsed0005.
 
     SELECT SINGLE *
       INTO CORRESPONDING FIELDS OF ls_zsed0005
       FROM zsed0005t
-      WHERE vkorg = gs_email-vkorg
-        AND spart = gs_email-spart
-        AND vkgrp = gs_email-vkgrp
-        AND kunag = gs_email-kunnr
-        AND kunnr = gs_email-kunnr.
+      WHERE vkorg = gs_email-vkorg   "영업 조직
+      AND   spart = gs_email-spart   "제품군
+      AND   vkgrp = gs_email-vkgrp   "영업 그룹
+      AND   kunag = gs_email-kunag   "고객 번호(판매처)
+      AND   kunnr = gs_email-kunnr.  "고객 번호(납품처)
 
     IF sy-subrc <> 0.   "데이터가 기존에 없음.
       CLEAR: ls_zsed0005.
+
+      MOVE-CORRESPONDING gs_email TO ls_zsed0005.  "tae
 
       ls_zsed0005-erdat = sy-datlo.
       ls_zsed0005-erzet = sy-timlo.
       ls_zsed0005-ernam = sy-uname.
 
+      INSERT zsed0005t FROM ls_zsed0005.
+
       gs_email-erdat = ls_zsed0005-erdat.
       gs_email-erzet = ls_zsed0005-erzet.
       gs_email-ernam = ls_zsed0005-ernam.
-      MOVE-CORRESPONDING gs_email TO ls_zsed0005.
-      INSERT zsed0005t FROM ls_zsed0005.
 
-      MESSAGE s000 WITH '저장되었습니다.'.
 
-      IF sy-subrc = 0.
-        MESSAGE s024.
-        "영업조직, 제품군, 영업그룹, 판매처명, 납품처명
-        ls_celltab-fieldname = 'VKORG' ."수정 가능 / 불가능 필드 이름을 문자열로
-        ls_celltab-fieldname = 'SPART' .
-        ls_celltab-fieldname = 'VKGRP' .
-        ls_celltab-fieldname = 'KUNAG' .
-        ls_celltab-fieldname = 'KUNNR' .
-        ls_celltab-style = cl_gui_alv_grid=>mc_style_disabled. " 수정 불가능 상수값
-        INSERT ls_celltab INTO TABLE lt_celltab. "sort 테이블이기 때문에 insert로 삽입. [원본]
-
-        gs_email-celltab = lt_celltab.
-        MODIFY gt_email FROM gs_email INDEX ls_rows-index TRANSPORTING erdat erzet ernam celltab.
-      ELSE.
-        MESSAGE s026.
-        MODIFY gt_email FROM gs_email INDEX ls_rows-index TRANSPORTING erdat erzet ernam.
-      ENDIF.
+      MODIFY gt_email FROM gs_email INDEX ls_rows-index .
 
     ELSE.  "데이터가 기존에 있음.
-      CLEAR : ls_zsed0005.
+
+      MOVE-CORRESPONDING gs_email TO ls_zsed0005.
 
       ls_zsed0005-aedat = sy-datlo. "변경일
       ls_zsed0005-aezet = sy-timlo. "변경시간
       ls_zsed0005-aenam = sy-uname. "변경자
 
-      "수정일 경우 등록 일자 가지고 오기(엑셀 업로드 후 재조회 에서 문제가 생겨 추가)
-      SELECT SINGLE erdat erzet ernam
-        INTO CORRESPONDING FIELDS OF ls_zsed0005
-        FROM zsed0005t
-        WHERE vkorg = pa_vkorg
-          AND spart = pa_spart
-          AND vkgrp = pa_vkgrp
-          AND kunag IN so_kunag
-          AND kunnr IN so_kunnr.
-
-      MODIFY zsed0005t FROM ls_zsed0005.
-
-      gs_email-erdat = ls_zsed0005-erdat.
-      gs_email-erzet = ls_zsed0005-erzet.
-      gs_email-ernam = ls_zsed0005-ernam.
-      gs_email-aedat = ls_zsed0005-aedat.
-      gs_email-aezet = ls_zsed0005-aezet.
-      gs_email-aenam = ls_zsed0005-aenam.
-
-      IF sy-subrc = 0.
-        MESSAGE s030 DISPLAY LIKE 'S'.
-*        gs_list-zmsg = TEXT-e15.
-        MODIFY gt_email FROM gs_email INDEX ls_rows-index TRANSPORTING erdat erzet ernam aedat aezet aenam.
-      ELSE.
-        MESSAGE e027 DISPLAY LIKE 'E'.
-        MODIFY gt_email FROM gs_email INDEX ls_rows-index TRANSPORTING erdat erzet ernam aedat aezet aenam.
-      ENDIF.
+      MODIFY zsed0005t FROM ls_zsed0005.   "db table은 변경일,변경시간,변경자만 바뀌게 되는것
+      MOVE-CORRESPONDING ls_zsed0005 TO gs_email.
+      MODIFY gt_email FROM gs_email INDEX ls_rows-index.  "alv에도 바뀐 내용을 업데이트 시켜주는 것.
     ENDIF.
 
+    PERFORM refresh_grid.
   ENDLOOP.
 
 ENDFORM.
@@ -926,6 +938,8 @@ FORM del_row .
       CONTINUE.
     ENDIF.
 
+    PERFORM refresh_grid.
+
   ENDLOOP.
 
 ENDFORM.
@@ -941,7 +955,6 @@ FORM editable_fields  USING    VALUE(p_field).
   DATA: lt_celltab TYPE lvc_t_styl,
         ls_celltab TYPE lvc_s_styl.
 
-*  CLEAR: gs_list, lt_celltab, ls_celltab.
 
   ls_celltab-fieldname = p_field.
   ls_celltab-style = cl_gui_alv_grid=>mc_style_enabled.
@@ -982,7 +995,8 @@ FORM handle_data_changed  USING pv_data_changed TYPE REF TO cl_alv_changed_data_
           ls_mod_cell TYPE lvc_s_modi.
 
   DATA : lt_ins_cell TYPE lvc_t_moce,
-          lt_mod_cell TYPE lvc_t_modi.
+          lt_mod_cell TYPE lvc_t_modi,
+          lv_kunag    TYPE zsed0005t-kunag.
 
   DATA: BEGIN OF ls_list,
           name1 TYPE kna1-name1,
@@ -1009,29 +1023,6 @@ FORM handle_data_changed  USING pv_data_changed TYPE REF TO cl_alv_changed_data_
       CONTINUE.
     ENDIF.
 
-    CASE ls_mod_cell-fieldname.
-      WHEN 'KUNAG'.
-        READ TABLE gt_email INDEX ls_mod_cell-row_id INTO gs_email.
-        gs_email-name1 = ls_list-name1.
-      call METHOD pv_data_changed->modify_cell
-        EXPORTING
-          i_row_id    = ls_mod_cell-row_id
-          i_fieldname = 'KUNAG'
-          i_value     = gs_email-name1.
-
-      WHEN 'CUSTMAIL' OR 'CUSTMAIL_2' OR 'CUSTMAIL_3'.
-        TRANSLATE gs_email-custmail   TO UPPER CASE.
-        TRANSLATE gs_email-custmail_2 TO UPPER CASE.
-        TRANSLATE gs_email-custmail_3 TO UPPER CASE.
-      WHEN 'CUSTMAIL2' OR 'CUSTMAIL2_2' OR 'CUSTMAIL2_3'.
-        TRANSLATE gs_email-custmail2   TO UPPER CASE.
-        TRANSLATE gs_email-custmail2_2 TO UPPER CASE.
-        TRANSLATE gs_email-custmail2_3 TO UPPER CASE.
-      WHEN 'SALESMAIL' OR 'SALESMAIL2'.
-        TRANSLATE gs_email-salesmail  TO UPPER CASE.
-        TRANSLATE gs_email-salesmail2 TO UPPER CASE.
-
-    ENDCASE.
 
   ENDLOOP.
 
@@ -1057,10 +1048,6 @@ FORM check_obligation .
   IF gs_email-vkgrp IS INITIAL.
     MESSAGE e000 WITH '영업그룹은 필수 입력값입니다. 영업그룹을 입력하십시오.'.
   ENDIF.
-
-*  IF gs_email-kunag IS INITIAL.
-*    MESSAGE e000 WITH '판매처는 필수 입력값입니다. 판매처를 입력하십시오.'.
-*  ENDIF.
 
 ENDFORM.
 *&---------------------------------------------------------------------*
@@ -1097,7 +1084,7 @@ ENDFORM.
 FORM set_event_handle .
 
   CREATE OBJECT go_event_handler.
-  SET HANDLER : go_event_handler->handle_data_changed FOR go_grid,
+  SET HANDLER : go_event_handler->handle_data_changed          FOR go_grid,
                 go_event_handler->handle_data_changed_finished FOR go_grid.
 
 ENDFORM.
@@ -1112,79 +1099,89 @@ ENDFORM.
 FORM handle_data_changed_finished USING et_good_cells TYPE lvc_t_modi
                                         e_modified    TYPE char01.
 
-  DATA: es_good_cells TYPE lvc_s_modi.
-*  DATA: pt_good_cells LIKE TABLE OF es_good_cells.
+  DATA: es_good_cells  TYPE lvc_s_modi.
 
   DATA: lt_list  LIKE TABLE OF gt_email,
-        ls_list  LIKE LINE OF gt_email,
-        ls_list2 LIKE LINE OF gt_email.
+        ls_list  LIKE LINE  OF gt_email,
+        ls_list2 LIKE LINE  OF gt_email,
+        lv_kunag TYPE string.
 
-  "이벤트 탈때 handle_data_changed_finished가 가장 먼저 타서 제일 밑부분 PERFORM
-  "refresh_grid. 로 인해 샌택행 구분자가 초기화됨
-  "e_modified는 data_changed 이벤트에서 타고 오면 X 아니면 SPACE 로 들어옴
+  CLEAR : es_good_cells, lt_list, lt_list[], ls_list, ls_list2.
+
   IF e_modified <> abap_true.
     RETURN.
   ENDIF.
-*
+
   LOOP AT et_good_cells INTO es_good_cells.
-    CLEAR: ls_list, lt_list[].
+
+    CLEAR : ls_list, lt_list[].
 
     lt_list[] = gt_email[].
 
     READ TABLE gt_email INTO ls_list INDEX es_good_cells-row_id.
 
-    "납품처
-    IF es_good_cells-fieldname = 'KUNNR'.
+    "판매처 체크 및 판매처명 get
+    IF es_good_cells-fieldname = 'KUNAG'.
 
-      IF ls_list-kunnr IS NOT INITIAL.
-
-        SELECT SINGLE kunnr
-        INTO ls_list2-kunnr
-        FROM kna1
-        WHERE kunnr = ls_list-kunnr.
-        IF sy-subrc <> 0.
-          ls_list-name2 = ''.
-
-          MODIFY gt_email FROM ls_list INDEX es_good_cells-row_id TRANSPORTING name2.
-          CLEAR : ls_list2-kunnr, ls_list-name2.
-          MESSAGE s000 WITH TEXT-e13 DISPLAY LIKE 'E'.
-        ELSE.
-          SELECT SINGLE name1
-          INTO ls_list-name2
-          FROM kna1
-          WHERE kunnr = ls_list-kunnr.
-          MODIFY gt_email FROM ls_list INDEX es_good_cells-row_id TRANSPORTING name2.
-        ENDIF.
-        CLEAR : ls_list2-kunnr, ls_list-name2.
-      ENDIF.
-
-      "판매처
-    ELSEIF es_good_cells-fieldname = 'KUNAG'.
       IF ls_list-kunag IS NOT INITIAL.
 
         SELECT SINGLE kunnr
-        INTO ls_list2-kunag
-        FROM kna1
-        WHERE kunnr = ls_list-kunag.
+          INTO ls_list2-kunag
+          FROM kna1
+          WHERE kunnr = ls_list-kunag.
+
         IF sy-subrc <> 0.
           ls_list-name1 = ''.
-
           MODIFY gt_email FROM ls_list INDEX es_good_cells-row_id TRANSPORTING name1.
-          CLEAR : ls_list2-kunnr, ls_list-name1.
           MESSAGE s000 WITH TEXT-e13 DISPLAY LIKE 'E'.
         ELSE.
           SELECT SINGLE name1
-          INTO ls_list-name1
-          FROM kna1
-          WHERE kunnr = ls_list-kunag.
+            INTO ls_list-name1
+            FROM kna1
+          WHERE kunnr = ls_list2-kunag.
           MODIFY gt_email FROM ls_list INDEX es_good_cells-row_id TRANSPORTING name1.
         ENDIF.
-        CLEAR : ls_list2-kunnr, ls_list-name1.
+
+
+        lv_kunag = ls_list-kunag.
+        DATA special_chr TYPE string.
+        DATA msg TYPE string.
+
+        CALL FUNCTION 'HR_GB_XML_PATTERN_CHECK'
+          EXPORTING
+            i_string  = lv_kunag
+          IMPORTING
+            e_invalid = special_chr
+            e_errtxt  = msg.
+        IF msg IS NOT INITIAL.
+          MESSAGE e000 WITH '올바른 값을 입력하십시오'.
+        ENDIF.
+
       ENDIF.
 
 
+      "납품처 체크 및 납품처명 get
+    ELSEIF es_good_cells-fieldname = 'KUNNR'.
+      IF ls_list-kunnr IS NOT INITIAL.
+        SELECT SINGLE kunnr
+          INTO ls_list2-kunnr
+          FROM kna1
+          WHERE kunnr = ls_list-kunnr.
+        IF sy-subrc <> 0.
+          ls_list-name2 = ''.
+          MODIFY gt_email FROM ls_list INDEX es_good_cells-row_id TRANSPORTING name2.
+          CLEAR: ls_list2-kunnr, ls_list-name2.
+          MESSAGE s000 WITH TEXT-e14 DISPLAY LIKE 'E'.
+        ELSE.
+          SELECT SINGLE name1
+            INTO ls_list-name2
+            FROM kna1
+            WHERE kunnr = ls_list-kunnr.
+          MODIFY gt_email FROM ls_list INDEX es_good_cells-row_id TRANSPORTING name2.
+        ENDIF.
+        CLEAR: ls_list2-kunnr, ls_list-name2.
+      ENDIF.
     ENDIF.
-
   ENDLOOP.
 
   PERFORM refresh_grid.
@@ -1216,8 +1213,9 @@ FORM edit_control .
 
     PERFORM non_editable_fields USING: 'ERDAT', 'ERZET', 'ERNAM', 'AEDAT', 'AEZET', 'AENAM'.
 
+    INSERT LINES OF lt_celltab INTO TABLE gs_email-celltab.   "추가
     MODIFY gt_email FROM gs_email INDEX lv_tabix.
-    CLEAR: gs_email.
+*    CLEAR: gs_email.
   ENDLOOP.
 
 ENDFORM.
