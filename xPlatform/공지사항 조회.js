@@ -311,7 +311,7 @@ function divSearch_edtKUNAGNM_onkeydown(obj: Edit, e: KeyEventInfo) {
 	// 팝업버튼으로 호출시 oncolumnchanged이벤트 중복방지(oncolumnchanged이벤트 내부는 제외)
 	if (e.keycode == 13) { //Q: keycode 상수값은 어디서 볼수 있는지? 의미를 모르겠음.
 		divSearch.edtKUNAGNM.enableevent = false; 
-		fnOpenPopup();  //고객사 팝업
+		fnOpenPopup();  //고객사 팝업이 중복으로 띄워지지 않게.
 		divSearch.edtKUNAGNM.enableevent = true;
 	}
 }
