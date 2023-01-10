@@ -658,11 +658,7 @@ FORM check_validation  TABLES  pt_rows  TYPE lvc_t_row.
     IF gs_email-kunag IS INITIAL.
       MESSAGE e029 DISPLAY LIKE 'E'.   "판매처는 필수값입니다.
     ELSE.
-      CALL FUNCTION 'CONVERSION_EXIT_ALPHA_INPUT'
-        EXPORTING
-          input  = gs_email-kunag
-        IMPORTING
-          output = gs_email-kunag.
+
       " 판매처코드
       " KNVP-VKORG = 영업조직 AND
       " KNVP-SPART = 제품군 AND
@@ -816,15 +812,12 @@ FORM modify_table  TABLES pt_rows TYPE lvc_t_row.
 
   IF lv_answer = '2' OR lv_answer = 'A'.
     EXIT.
-*  ELSE.
-*    MESSAGE s000 WITH '성공적으로 저장하였습니다.'.
   ENDIF.
 
   LOOP AT pt_rows INTO ls_rows.     "pt_rows's actual parameter == gt_rows
 
-    CLEAR : gs_email.
+    CLEAR : gs_email, ls_zsed0005.
     READ TABLE gt_email INDEX ls_rows-index INTO gs_email.
-    CLEAR:ls_zsed0005.
 
     SELECT SINGLE *
       INTO CORRESPONDING FIELDS OF ls_zsed0005
@@ -855,7 +848,7 @@ FORM modify_table  TABLES pt_rows TYPE lvc_t_row.
 
     ELSE.  "데이터가 기존에 있음.
 
-      "수정일 경우 등록 일자 가지고 오기
+      "수정일 경우 등록 정보 가지고 오기
 *      SELECT SINGLE erdat erzet ernam
 *        INTO CORRESPONDING FIELDS OF ls_zsed0005
 *        FROM zsed0005t
@@ -864,6 +857,10 @@ FORM modify_table  TABLES pt_rows TYPE lvc_t_row.
 *        AND   vkgrp = gs_email-vkgrp   "영업 그룹
 *        AND   kunag = gs_email-kunag   "고객 번호(판매처)
 *        AND   kunnr = gs_email-kunnr.  "고객 번호(납품처)
+
+      MOVE ls_zsed0005-erdat TO gs_email-erdat. "생성일
+      MOVE ls_zsed0005-erzet TO gs_email-erzet. "생성시간
+      MOVE ls_zsed0005-ernam TO gs_email-ernam. "생성자
 
       MOVE-CORRESPONDING gs_email TO ls_zsed0005.
 
@@ -925,7 +922,7 @@ FORM del_row .
       text_not_found        = 1
       OTHERS                = 2.
 
-  IF  lv_answer = '2' OR  "NO
+  IF lv_answer = '2' OR "NO
       lv_answer = 'A'.   "취소
     EXIT.
   ENDIF.
@@ -1003,29 +1000,40 @@ ENDFORM.
 *&---------------------------------------------------------------------*
 FORM handle_data_changed  USING pv_data_changed TYPE REF TO cl_alv_changed_data_protocol.
 
-  DATA : ls_ins_cell TYPE lvc_s_moce,
-          ls_mod_cell TYPE lvc_s_modi.
+*  DATA : ls_ins_cell TYPE lvc_s_moce,
+*         ls_mod_cell TYPE lvc_s_modi.
+*
+*  DATA : lt_ins_cell TYPE lvc_t_moce,
+*         lt_mod_cell TYPE lvc_t_modi,
+*         lv_kunag    TYPE zsed0005t-kunag.
+*
+*  DATA: BEGIN OF ls_list,
+*          name1 TYPE kna1-name1,
+*          kunnr TYPE kna1-kunnr,
+*        END OF ls_list.
+*
+*
+*  lt_ins_cell[] = pv_data_changed->mt_inserted_rows[].
+*  lt_mod_cell[] = pv_data_changed->mt_mod_cells[].
+*
+** & 새로 추가된 Row는 무시
+*  LOOP AT lt_ins_cell INTO ls_ins_cell.
+*    DELETE lt_mod_cell WHERE row_id = ls_ins_cell-row_id.
+*  ENDLOOP.
+*
+*  CLEAR : gs_email.
 
-  DATA : lt_ins_cell TYPE lvc_t_moce,
-          lt_mod_cell TYPE lvc_t_modi,
-          lv_kunag    TYPE zsed0005t-kunag.
 
-  DATA: BEGIN OF ls_list,
-          name1 TYPE kna1-name1,
-          kunnr TYPE kna1-kunnr,
-        END OF ls_list.
-
-
-  lt_ins_cell[] = pv_data_changed->mt_inserted_rows[].
-  lt_mod_cell[] = pv_data_changed->mt_mod_cells[].
-
-* & 새로 추가된 Row는 무시
-  LOOP AT lt_ins_cell INTO ls_ins_cell.
-    DELETE lt_mod_cell WHERE row_id = ls_ins_cell-row_id.
-  ENDLOOP.
-
-  CLEAR : gs_email.
-
+*  LOOP AT lt_mod_cell INTO ls_mod_cell.
+*
+*    READ TABLE gt_email INTO gs_email INDEX ls_mod_cell-row_id.
+*
+*    IF sy-subrc <> 0.
+*      CONTINUE.
+*    ENDIF.
+*
+*
+*  ENDLOOP.
 
 ENDFORM.
 *&---------------------------------------------------------------------*
@@ -1155,7 +1163,7 @@ FORM handle_data_changed_finished USING et_good_cells TYPE lvc_t_modi
             e_invalid = special_chr
             e_errtxt  = msg.
         IF msg IS NOT INITIAL.
-          MESSAGE e000 WITH '올바른 값을 입력하십시오'.
+          MESSAGE s000 WITH '올바른 값을 입력하십시오' DISPLAY LIKE 'W'.
         ENDIF.
 
       ENDIF.
