@@ -925,7 +925,7 @@ FORM del_row .
       text_not_found        = 1
       OTHERS                = 2.
 
-  IF lv_answer = '2' OR "NO
+  IF  lv_answer = '2' OR  "NO
       lv_answer = 'A'.   "취소
     EXIT.
   ENDIF.
@@ -1026,17 +1026,6 @@ FORM handle_data_changed  USING pv_data_changed TYPE REF TO cl_alv_changed_data_
 
   CLEAR : gs_email.
 
-
-*  LOOP AT lt_mod_cell INTO ls_mod_cell.
-*
-*    READ TABLE gt_email INTO gs_email INDEX ls_mod_cell-row_id.
-*
-*    IF sy-subrc <> 0.
-*      CONTINUE.
-*    ENDIF.
-*
-*
-*  ENDLOOP.
 
 ENDFORM.
 *&---------------------------------------------------------------------*
@@ -1263,7 +1252,7 @@ FORM f4_pa_vkgrp .
       retfield        = 'VKGRP'
       dynpprog        = sy-repid
       dynpnr          = sy-dynnr
-      dynprofield     = 'P_VKGRP'
+      dynprofield     = 'PA_VKGRP'
       window_title    = '영업그룹'
       value_org       = 'S'
     TABLES
