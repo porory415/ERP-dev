@@ -1,0 +1,150 @@
+<mvc:View
+    displayBlock="true"
+	controllerName="swx.app.zswx2720.controller.List"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns:m="sap.m"
+    xmlns:v="sap.ui.comp.variants"
+    xmlns:f="sap.f"
+    xmlns:t="sap.ui.table"
+    xmlns:fb="sap.ui.comp.filterbar">
+    <f:DynamicPage 
+        headerExpanded="{/view/headerExpanded}"
+        preserveHeaderStateOnScroll="false"
+        showFooter="{
+            parts: ['/view/modify','/view/view/Editable'],
+            formatter: '.formatter.fmtVisibleApptpEdit'
+        }">
+        <f:title>
+            <f:DynamicPageTitle>
+                <f:heading>
+                    <m:Title text="{/view/appTitle}"/>
+				</f:heading>
+                <f:actions>
+                    <m:Button
+                        visible="{/view/isChildComponent}"
+                        icon="{= ${COMMON>/screenSizeExpand} ? 'sap-icon://exit-full-screen' : 'sap-icon://full-screen'}" 
+                        type="Transparent" 
+                        press="onPressToggleScreenSize"/>
+                    <m:Button 
+                        icon="{= ${/view/favorite} ? 'sap-icon://favorite' : 'sap-icon://unfavorite' }" 
+                        type="Transparent" 
+                        press="onPressFavoriteButton"/>
+                    <m:Button 
+                        visible="{
+                            parts: ['/view/modify','/view/view/Editable'],
+                            formatter: '.formatter.fmtVisibleApptpRead'
+                        }" 
+                        text="수정" 
+                        type="Transparent" 
+                        press="onPressChangeStatus($event, 'View')"/>
+                    <m:Button 
+                        text="조회" 
+                        type="Emphasized" 
+                        press="onSearch($event, 'View')"/>
+                </f:actions>
+            </f:DynamicPageTitle>
+        </f:title>
+        <f:header>
+            <f:DynamicPageHeader>
+                <fb:FilterBar 
+                    useToolbar="false" 
+                    showGoOnFB="false"
+                    showClearButton="true" 
+                    clear="onClearFilterbar" 
+                    reset="onResetFilterbar"
+                    search="onSearchInFilterBar"
+                    filtersDialogBeforeOpen="onFiltersDialogBeforeOpen"
+                    filterContainerWidth="8rem"
+                    filterGroupItems="{
+                        path: '/view/filter/Layout',
+                        factory: '.library.fctFilterItems'
+                    }">
+                </fb:FilterBar>
+            </f:DynamicPageHeader>
+        </f:header>
+        <f:content>
+            <t:Table
+                id="FilterTable"
+                columns="{
+                    path: '/view/table/Layout',
+                    factory: '.library.fctTableColumns'
+                }"
+				rows="{/view/table/Data}"
+				visibleRowCountMode="Auto"
+                visibleRowCount="{/view/table/VisibleRowCount}"
+                fixedColumnCount="{/view/table/FixedColumn}"
+                fixedBottomRowCount="{/view/table/FixedBottomRow}"
+				selectionMode="{
+                    path : '/view/table/SelectionMode',
+                    formatter : '.fmtTableSelectionMode'
+                }"
+				ariaLabelledBy="title"
+                filter="onFilterBindingRow($event, 'Table')"
+                sort="onSortBindingRow($event, 'Table')">
+                <t:extension>
+                    <m:OverflowToolbar>
+                        <m:Title text="{
+                            path : '/view/table/Count',
+                            formatter : '.fmtTableRowCount'
+                        }" titleStyle="H5"/>
+                        <m:SearchField 
+                            class="sapUiNoMargin" 
+                            visible="{= ${/view/table/UseFilter} ? true : false}"
+                            width="12rem"
+							placeholder="Filter"
+							value="{/view/table/FilterValue}"
+                            search="onSubmitFilterValue($event, 'table', 'FilterTable')"
+							liveChange="onLiveChangeFilterValue($event, 'table', 'FilterTable')"/>
+                        <m:Button 
+                            visible="{=${/view/table/UseFilter}||${/view/table/UseSorter}}" 
+                            type="Transparent" 
+                            tooltip="Filter/Sorter 초기화"
+                            icon="sap-icon://decline" 
+                            press="onClearTableFilterSorter($event, 'table', 'FilterTable')">
+                        </m:Button>
+                        <m:ToolbarSpacer/>
+                        <m:Button visible="{/view/view/Editable}" type="Transparent" icon="sap-icon://add"    press="onPressTableAdd($event, 'table')"></m:Button>
+                        <m:Button visible="{/view/view/Editable}" type="Transparent" icon="sap-icon://delete" press="onPressTableDelete($event, 'table')"></m:Button>
+                        <m:Button 
+                            class="sapUiNoMargin" 
+                            icon="sap-icon://action-settings"
+                            type="Transparent"
+                            press="onPressSettings('Table')">
+                            <m:layoutData>
+                                <m:OverflowToolbarLayoutData priority="NeverOverflow"/>
+                            </m:layoutData>
+                        </m:Button>
+                        <v:VariantManagement
+                            id="viewVariantManager"
+                            class="sapUiNoMargin" 
+                            showShare="true"
+                            defaultVariantKey="{/view/view/DefaultVariant}"
+                            initialSelectionKey="{/view/view/SelectionVariant}"
+                            variantItems="{/view/view/Variant}"
+                            save="onSaveVariantManager($event, 'View')"
+                            manage="onManageVariantManager($event, 'View')"
+                            select="onSelectVariantManager($event, 'View')">
+                            <v:variantItems>
+                                <v:VariantItem 
+                                    key="{vrnid}" text="{vrnnm}" 
+                                    labelReadOnly="true" 
+                                    global="{= ${ispbl} ? true : false }"
+                                    author="{usrid}" />
+                            </v:variantItems>
+                            <v:layoutData>
+                                <m:OverflowToolbarLayoutData priority="NeverOverflow"/>
+                            </v:layoutData>
+                        </v:VariantManagement>
+                    </m:OverflowToolbar>
+                </t:extension>
+            </t:Table>
+        </f:content>
+        <f:footer>
+            <m:OverflowToolbar>
+                <m:ToolbarSpacer/>
+                <m:Button type="Accept" text="저장" press="onPressSave($event, { 'targetnm': 'Table' })"/>
+                <m:Button type="Reject" text="취소" press="onPressChangeStatus($event, 'View')" />
+            </m:OverflowToolbar>
+        </f:footer>
+    </f:DynamicPage>
+</mvc:View>
