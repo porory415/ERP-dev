@@ -1,0 +1,8 @@
+- BPO시스템에서 정해진 기준에 따라 B/L별 도착일자 정보를 보내준다.
+- 데이터가 리스트로 넘어오면 SAP B/L정보에 업데이트 한다.
+ - 업데이트 전 체크로직 : B/L번호 + BKNO 조합으로 데이터가 있는지 체크하여 있는 건만 업데이트 로직 수행
+
+ - 테이블 : ZTETBLK-ARDAT (실제도착일) = IT_TAB-DSATADT
+
+
+ - ZTETBLK 필드 변경이력도 남긴다. (Function : Z_TE_IFR0012 - PERFORM CHG_BL_INFO 참고)
