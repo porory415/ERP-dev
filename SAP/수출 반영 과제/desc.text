@@ -6,3 +6,6 @@
 
 
  - ZTETBLK 필드 변경이력도 남긴다. (Function : Z_TE_IFR0012 - PERFORM CHG_BL_INFO 참고)
+
+EXPORT param:
+EX_OUTPUT type ZDT_GRPEXP0310_PRO_RESPONSE
