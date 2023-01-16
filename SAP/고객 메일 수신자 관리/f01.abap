@@ -1163,7 +1163,7 @@ FORM handle_data_changed_finished USING et_good_cells TYPE lvc_t_modi
             e_invalid = special_chr
             e_errtxt  = msg.
         IF msg IS NOT INITIAL.
-          MESSAGE s000 WITH '올바른 값을 입력하십시오' DISPLAY LIKE 'W'.
+          MESSAGE s000 WITH '올바른 값을 입력하십시오' DISPLAY LIKE 'E'.
         ENDIF.
 
       ENDIF.
@@ -1257,14 +1257,15 @@ FORM f4_pa_vkgrp .
 
   CALL FUNCTION 'F4IF_INT_TABLE_VALUE_REQUEST'
     EXPORTING
-      retfield        = 'VKGRP'
+      retfield        = 'VKGRP'     "name of return field of table (popup)
       dynpprog        = sy-repid
       dynpnr          = sy-dynnr
-      dynprofield     = 'PA_VKGRP'
+      dynprofield     = 'PA_VKGRP'  "screen field targeted
       window_title    = '영업그룹'
-      value_org       = 'S'
+      value_org       = 'S'         " S: 구현이 용이하다. popup창에서 한 라인의 하나의 필드만 반환할 수 있다.
+                                    " C: 여러개의 셀을 리턴값으로 받아 사용할 수 있다. 다만 구현이 다소 복잡.
     TABLES
-      value_tab       = lt_vkgrp
+      value_tab       = lt_vkgrp    "popup으로 보여줄 f4데이터
     EXCEPTIONS
       parameter_error = 1
       no_values_found = 2
