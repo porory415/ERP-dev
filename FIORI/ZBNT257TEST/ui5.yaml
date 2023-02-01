@@ -2,7 +2,7 @@
 
 specVersion: "2.5"
 metadata:
-  name: zswx2720
+  name: zbnt257test
 type: application
 server:
   customMiddleware:
@@ -17,7 +17,7 @@ server:
           url: https://ui5.sap.com
         backend:
           - path: /sap
-            url: http://172.30.158.1:8080
+            url: http://172.30.158.1:8081
             client: '100'
     - name: fiori-tools-appreload
       afterMiddleware: compression
@@ -28,5 +28,5 @@ server:
     - name: fiori-tools-preview
       afterMiddleware: fiori-tools-appreload
       configuration:
-        component: zswx2720
+        component: zbnt257test
         ui5Theme: sap_fiori_3

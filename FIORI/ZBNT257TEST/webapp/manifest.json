@@ -2,7 +2,7 @@
 	"_version": "1.1.0",
 
 	"sap.app": {
-		"id": "swx.app.zswx2720",
+		"id": "swx.app.zbnt257test",
 		"type": "application",
 		"i18n": "i18n/i18n.properties",
 		"title": "{{appTitle}}",
@@ -36,7 +36,7 @@
 		"resourceRoots": {
 		},
 		"rootView": {
-			"viewName": "swx.app.zswx2720.view.App",
+			"viewName": "swx.app.zbnt257test.view.App",
 			"type": "XML",
 			"async": true,
 			"id": "app"
@@ -68,7 +68,7 @@
 			"i18n": {
 				"type": "sap.ui.model.resource.ResourceModel",
 				"settings": {
-					"bundleName": "swx.app.zswx2720.i18n.i18n"
+					"bundleName": "swx.app.zbnt257test.i18n.i18n"
 				}
 			}
 		},
@@ -81,7 +81,7 @@
 			"config": {
 				"routerClass": "sap.f.routing.Router",
 				"viewType": "XML",
-				"viewPath": "swx.app.zswx2720.view",
+				"viewPath": "swx.app.zbnt257test.view",
 				"controlId": "app",
 				"controlAggregation": "pages",
 				"transition": "slide",

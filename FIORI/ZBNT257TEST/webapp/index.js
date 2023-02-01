@@ -27,7 +27,7 @@ sap.ui.define([
 
 
 	new ComponentContainer({
-		name: 'swx.app.zswx2720',
+		name: 'swx.app.zbnt257test',
 		height : '100%',
 		async: true
 	}).placeAt('content');

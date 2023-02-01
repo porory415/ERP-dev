@@ -2,7 +2,7 @@
 
 specVersion: "2.5"
 metadata:
-  name: zswx2720
+  name: zbnt257test
 type: application
 builder:
   resources:
@@ -20,6 +20,6 @@ builder:
           username: env:UI5_USERNAME
           password: env:UI5_PASSWORD
         app:
-          name: zswx2720
+          name: zbnt257test
           package: ZSWX
           transport: env:UI5_REQUESTNO

@@ -2,7 +2,7 @@ sap.ui.define([
 'benit/ui5/UIComponent'
 ], function(UIComponent) {
 	'use strict';
-	var Component = UIComponent.extend('swx.app.zswx2720.Component', {
+	var Component = UIComponent.extend('swx.app.zbnt257test.Component', {
 		metadata : {
 			manifest: 'json'
 		},

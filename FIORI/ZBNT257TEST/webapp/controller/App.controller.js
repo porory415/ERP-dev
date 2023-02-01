@@ -3,7 +3,7 @@ sap.ui.define([
     'sap/m/MessageToast'
 ], function (BaseController, MessageToast) {
     'use strict';
-    return BaseController.extend('swx.app.zswx2720.controller.App', {
+    return BaseController.extend('swx.app.zbnt257test.controller.App', {
         // onInit: function () {
         //     // this.getView().setModel(sap.ui.getCore().getModel('MAIN'), 'MAIN');
         //     // const oOwnerComponent = this.getOwnerComponent();

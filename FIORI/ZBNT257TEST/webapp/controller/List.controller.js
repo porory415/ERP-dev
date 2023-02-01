@@ -2,7 +2,7 @@ sap.ui.define([
     'benit/ui5/BaseController'
 ], function (BaseController) {
     'use strict';
-    return BaseController.extend('swx.app.zswx2720.controller.List', {
+    return BaseController.extend('swx.app.zbnt257test.controller.List', {
         // onInit: function () {
         //     BaseController.prototype.onInit.apply(this, arguments);
         //     this.getRouter().getRoute('default').attachMatched(this._onRouteMatched, this);

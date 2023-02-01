@@ -1,6 +1,6 @@
 <mvc:View
     displayBlock="true"
-	controllerName="swx.app.zswx2720.controller.List"
+	controllerName="swx.app.zbnt257test.controller.List"
     xmlns:mvc="sap.ui.core.mvc"
     xmlns:m="sap.m"
     xmlns:v="sap.ui.comp.variants"
@@ -40,7 +40,7 @@
                     <m:Button 
                         text="조회" 
                         type="Emphasized" 
-                        press="onSearch($event, 'View')"/>
+                        press="onSearch($event, 'View')"/>  
                 </f:actions>
             </f:DynamicPageTitle>
         </f:title>

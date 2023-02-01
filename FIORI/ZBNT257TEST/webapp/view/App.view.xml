@@ -1,6 +1,6 @@
 <mvc:View
     displayBlock="true"
-	controllerName="swx.app.zswx2720.controller.App"
+	controllerName="swx.app.zbnt257test.controller.App"
 	xmlns="sap.m"
 	xmlns:mvc="sap.ui.core.mvc">
 	<App id="app"/>
