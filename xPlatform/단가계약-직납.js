@@ -112,6 +112,9 @@ function cfnCommonCodeCallBackSap()
 	var sSendData		= "";
 		sSendData		+= "IV_DPTNM="+gdsOrghk.getColumn(0,"ORGHK_NM");
 		sSendData		+= " IV_SNAME="+gfnGetUserInfo("ENAME");
+        sSendData       += " IV_QTDAT_FR="+divSearch.divDate.Calendar00.value;  //추가
+	    sSendData       += " IV_QTDAT_TO="+divSearch.divDate.Calendar01.value;  //추가
+
 		//sSendData		+= " IV_SALESM='" + lvSalesM + "'";
 
 	var sCallBackFn		= "";
@@ -123,8 +126,9 @@ function cfnInitForm()
 {
 	dsMaster.clearData();
 	dsMaster.addRow();
-	divSearch.divDate.fnSetDay(gfnGetFirstDate(gfnToday()), gfnToday());	//오늘 날짜 기준 일주일 치 세팅.
-	
+	divSearch.divDate.fnSetDay(gfnGetFirstDate(gfnToday()), gfnToday());	//원본. 오늘 날짜 기준 일주일 치 세팅.
+	divSearch.divDate.fnSetDay(gfnAddDate(gfnToday(),-365), gfnToday()); //추가 2023.02.06
+    trace(divSearch.divDate.Calendar01.value);  //추가2023.02.03
 	
 	divSearch.cboVTWEG.value = "";
 	divSearch.cboSPART.value = "";
@@ -146,7 +150,7 @@ function cfnInitForm()
 	divSearch.chkZQTTYP1.value = "P03";
 	divSearch.chkZQTTYP2.value = "P04";
 	
-	trace(divSearch.divDate.Calendar01.value);  //추가2023.02.03
+	
 // 	var sSALEM = gdsEmpInfo.getColumn(0,"SALEM");
 // 	var sXTM = gdsEmpInfo.getColumn(0,"XTM");
 // 	
@@ -178,7 +182,7 @@ function cfnInitForm()
  */
 function cfnBeforeTran(sTranId) 
 {
-	if(sTranId=="cfnSearch")
+	if(sTranId=="cfnSearch")  //
 	{
 	}
 }
@@ -205,9 +209,7 @@ function cfnSearch()
 	var sOutDS 			= "dsDetail=T_LIST";
 	var sContextPath 	= "/jco/JcoController/";
 	var sServelet 		= "getJcoData.xp?FUNCTION_NAME=Z_LTSP_IF0401";
-	var sSendData		= "";  //원본은 얘 하나.
-	    sSendData       += " IV_QTDAT_FR="+divSearch.divDate.Calendar00.value;  //추가
-	    sSendData       += " IV_QTDAT_TO="+divSearch.divDate.Calendar01.value;  //추가
+	var sSendData		= ""; 
 
 	var ZQTTYP = "";
 	for(var i=0; i<5; i++)
