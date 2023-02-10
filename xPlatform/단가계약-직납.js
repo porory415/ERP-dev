@@ -1,7 +1,10 @@
+
 /**
- * 시	스	템		: -                             <br>
+ * 시	스	템		: 코오롱프로세스혁신 업무포탈<br>
  * 업	무	명 		: ltsPop540		 				<br>
  * 파	일	명 		: ltsPop540.xfdl 				<br>
+ * 작	성	자 		: dwsss						<br>
+ * 작	성	일 		: 2016.01.21					<br>
  *													<br>
  * 설		명 		: 단가 계약 리스트 조회		<br>
  *---------------------------------------------------------------------------------------<br>
@@ -35,6 +38,8 @@ include "lib::comLib.xjs";
  */
 function cfnInitOnload()
 {	
+	trace("cfnInitOnload()		");
+
 	//공통코드(biztype:)	
 	//gfnSetInitForm(this); // ctrl+shift+F1이 눌리도록
 
@@ -51,12 +56,6 @@ function cfnInitOnload()
    ,{sHlpName:"ZLTS_H_TVKO", sHlpField:"BUKRS", low:sBUKRS	}		
 	];
 	gfnGetSearchHelpCbo(oSearchHelpCond, false);	
-	
-// 	var oSearchHelpCond02 = [
-//  	{sHlpName:"ZLTS_H_ORGHK", sHlpField:"DPTCD", low:"*", dsName:"dsDPTCbo", code:"ORGHK", data:"ORGNM", selecttype:"A", objid: "divSearch.cboVKGRP"}
-//     ,{sHlpName:"ZLTS_H_ORGHK", sHlpField:"BUKRS", low:sBUKRS}
-//  	];
-//  	gfnGetSearchHelpCbo(oSearchHelpCond02,false);	
 	
 	//제품그룹
 	var oSearchHelpCond03 = [
@@ -90,7 +89,7 @@ function cfnInitOnload()
 	gfnSetGridContextMenu(divResult.grdList);	
 	
 	// 기간달력binding
-	divSearch.divDate.fnSetBind("dsMaster", "IV_QTDAT_FR", "IV_QTDAT_TO", this);
+	//divSearch.divDate.fnSetBind("dsMaster", "IV_QTDAT_FR", "IV_QTDAT_TO", this);
 }
 
 /**
@@ -101,6 +100,7 @@ function cfnInitOnload()
  */
 function cfnCommonCodeCallBackSap()
 {
+	trace("cfnCommonCodeCallBackSap		");
 	//OTC팀의 경우 gdsOrghk에 여러팀의 이름이 나와 사원검색이 불가하여 필터링 걸어줌.
 	gdsOrghk.filter("DOCTY == 'PC' && ORGHK == "+ gfnGetUserInfo("ORGHK")+"");
 	
@@ -112,9 +112,6 @@ function cfnCommonCodeCallBackSap()
 	var sSendData		= "";
 		sSendData		+= "IV_DPTNM="+gdsOrghk.getColumn(0,"ORGHK_NM");
 		sSendData		+= " IV_SNAME="+gfnGetUserInfo("ENAME");
-        sSendData       += " IV_QTDAT_FR="+divSearch.divDate.Calendar00.value;  //추가
-	    sSendData       += " IV_QTDAT_TO="+divSearch.divDate.Calendar01.value;  //추가
-
 		//sSendData		+= " IV_SALESM='" + lvSalesM + "'";
 
 	var sCallBackFn		= "";
@@ -122,13 +119,35 @@ function cfnCommonCodeCallBackSap()
 	gfnSapTranN(sTranId, sInDS, sOutDS, sContextPath, sServelet, sSendData, sCallBackFn);
 }
 
+function gfnGetFirstDates(strDate) 
+{
+
+    var s = "";
+
+    if (strDate == null) 
+    {
+	    s = getToday().substr(0,6) + "01";  //금일 월의 1일으로 세팅 
+
+    } else {
+	    var date = new Date(parseInt(strDate.substr(0, 4)), parseInt(strDate.substr(4, 2)) - 1, 1);
+	    s = (new Date(date)).getFullYear()
+	      + (((new Date(date)).getMonth() + 1)+ "").padLeft(2, '0')
+	      + ((new Date(date)).getDate() + "").padLeft(2, '0');
+	    trace(" view s:     "+ s);
+    }
+	return (s);
+}
+
 function cfnInitForm()
 {
+	trace("InitForm	qtdat_fr		"+divSearch.QTDAT_FR.value);
+	trace("InitForm	qtdat_to		"+divSearch.QTDAT_TO.value);
+	
 	dsMaster.clearData();
 	dsMaster.addRow();
-	divSearch.divDate.fnSetDay(gfnGetFirstDate(gfnToday()), gfnToday());	//원본. 오늘 날짜 기준 일주일 치 세팅.
-	divSearch.divDate.fnSetDay(gfnAddDate(gfnToday(),-365), gfnToday()); //추가 2023.02.06
-    trace(divSearch.divDate.Calendar01.value);  //추가2023.02.03
+	
+	divSearch.QTDAT_FR.value = gfnGetFirstDates(gfnToday());  //추가: 해당 달 1일
+	divSearch.QTDAT_TO.value = gfnGetLastDate(gfnToday());   //추가: 해당 달 마지막일
 	
 	divSearch.cboVTWEG.value = "";
 	divSearch.cboSPART.value = "";
@@ -151,24 +170,6 @@ function cfnInitForm()
 	divSearch.chkZQTTYP2.value = "P04";
 	
 	
-// 	var sSALEM = gdsEmpInfo.getColumn(0,"SALEM");
-// 	var sXTM = gdsEmpInfo.getColumn(0,"XTM");
-// 	
-// 	if(sSALEM == "X" && sXTM == "X")
-// 	{
-// 		//팀장
-// 		divSearch.cboVKGRP.value = dsList.getColumn(0, "VKGRP");
-// 		
-// 		divSearch.cboVKGRP.enable = false;
-// 	}
-// 	else if(sSALEM == "X" && sXTM != "X")
-// 	{
-// 		//담당자인경우
-// 		divSearch.cboVKGRP.value = dsList.getColumn(0, "VKGRP");;
-// 		divSearch.edtPERNRNM.value = gdsEmpInfo.getColumn(0,"ENAME")
-// 		divSearch.edtIKENID.value = gdsEmpInfo.getColumn(0,"LOGID");
-// 		
-// 	}
 }
 
 //=======================================================================================
@@ -182,7 +183,8 @@ function cfnInitForm()
  */
 function cfnBeforeTran(sTranId) 
 {
-	if(sTranId=="cfnSearch")  //
+	trace("cfnBeforeTran		");
+	if(sTranId=="cfnSearch")
 	{
 	}
 }
@@ -194,23 +196,24 @@ function cfnBeforeTran(sTranId)
  * @return 없음
  * @memberOf ltsCa090
  */
-function cfnSearch()
+function cfnSearch()  //조회버튼 눌렀을 때 
 {
-
+	trace("cfnSearch		");
 	//데이터 초기화
 	//dsKEYM_LIST.clearData();
 	
- 	var aPeriod 	= divSearch.divDate.fnGetDay();
- 	var sStartDt 	= aPeriod[0];
- 	var sEndDt 		= aPeriod[1];
+ 	/*var aPeriod 	= divSearch.divDate.fnGetDay();*/
+ 	var sStartDt 	= divSearch.QTDAT_FR.value;
+ 	var sEndDt 		= divSearch.QTDAT_TO.value;
+ 	trace("aPeriod[0]:	"+sStartDt+"     "+"aPeriod[1]:		"+sEndDt);
 			
 	var sTranId			= "cfnSearch";
 	var sInDS 			= "";
-	var sOutDS 			= "dsDetail=T_LIST";
+	var sOutDS 			= "dsDetail=T_LIST";	
 	var sContextPath 	= "/jco/JcoController/";
 	var sServelet 		= "getJcoData.xp?FUNCTION_NAME=Z_LTSP_IF0401";
-	var sSendData		= ""; 
-
+	var sSendData		= "";
+	
 	var ZQTTYP = "";
 	for(var i=0; i<5; i++)
 	{
@@ -229,6 +232,7 @@ function cfnSearch()
 	var sCallBackFn		= "";
 	
 	trace("cfnSearch.SendData ==> " + sSendData);
+
 	gfnSapTranN(sTranId, sInDS, sOutDS, sContextPath, sServelet, sSendData, sCallBackFn);
 
 }
@@ -263,7 +267,8 @@ function cfnDelete()
  */
 function cfnNew(obj:Button,  e:ClickEventInfo)
 {
-//폼초기화 함수
+	trace("cfnNew		");
+	//폼초기화 함수
 	cfnInitForm();
 }
 
@@ -281,13 +286,16 @@ function cfnNew(obj:Button,  e:ClickEventInfo)
  */
 function cfnCallback(sTranId, nErrorCode, sErrorMsg) 
 {
+	trace("cfnCallback				"+divSearch.QTDAT_FR.value);
 	if(sTranId == "fnSearchSalesInfo")
 	{
+		trace("saleinfo				"+divSearch.QTDAT_FR.value);
 		gfnSetAlertMsgUd("-1");
 		cfnInitForm();
 	}
 	else if(sTranId == "cfnSearch")
 	{	
+	trace("cfnsearch				"+divSearch.QTDAT_FR.value);
 		gfnSetAlertMsgUd("-1");
 		
 	}
@@ -335,12 +343,6 @@ function cfnBeforeGrid(objGrd, type, obj:Button,  e:ClickEventInfo)
 		}	
 	}
 }
-
-//=======================================================================================
-// 6.사용자 정의함수
-//---------------------------------------------------------------------------------------
-
-
 
 
 
@@ -637,4 +639,101 @@ function divResult_grdList_oncelldblclick(obj:Grid, e:GridClickEventInfo)
 	gfnRedirectForm(sUrl, aParam, sType);	
 }
 
+function divSearch_QTDAT_FR_onchanged(obj:Calendar, e:ChangeEventInfo)  //없으면 안됨.
+{
+ 	
+ 	trace("user_select:			   	"+dsMaster.getColumn(dsMaster.rowposition, "IV_QTDAT_FR"));
+ 	
+ 	var firstDate = dsMaster.getColumn(dsMaster.rowposition, "IV_QTDAT_FR");
+ 	trace("selected_Y				" + firstDate.substr(0,4));
+ 	trace("selected_M				" + firstDate.substr(4,2));
+ 	trace("selected_D				" + firstDate.substr(6,2));
+ 	
+ 	var date = new Date(firstDate.substr(0,4), firstDate.substr(4,2)-1, firstDate.substr(6,2));
+ 	trace("date:		"+date);
+ 	
+ 	var s = (new Date(date)).getFullYear()
+ 	      + (((new Date(date)).getMonth() + 1)+ "").padLeft(2, '0')
+ 	      + ((new Date(date)).getDate() + "").padLeft(2, '0');
+ 	
+ 	if ((new Date(date)).getMonth()+1 == 1)
+ 	{
+ 		divSearch.QTDAT_FR.value = (new Date(date)).getFullYear()
+ 	      + "01"
+ 	      + ((new Date(date)).getDate() + "").padLeft(2, '0');
+ 	}
+ 	trace("after_Select:		"+ s);
+ 	
+ 	trace("QTDAT_FR:			"+divSearch.QTDAT_FR.value);
+ }
 
+
+function dsMaster_oncolumnchanged(obj:Dataset, e:DSColChangeEventInfo)
+{
+	trace("<dsMaster_oncolumnchanged> ");
+	/*from date 설정*/
+	var firstDate = dsMaster.getColumn(dsMaster.rowposition, "IV_QTDAT_FR");
+	trace("selected_Y				" + firstDate.substr(0,4));
+	trace("selected_M				" + firstDate.substr(4,2));
+	trace("selected_D				" + firstDate.substr(6,2));
+	var date = new Date(firstDate.substr(0,4), firstDate.substr(4,2)-1, firstDate.substr(6,2));
+	
+	var s = (new Date(date)).getFullYear()
+	      + (((new Date(date)).getMonth() + 1)+ "").padLeft(2, '0')
+	      + ((new Date(date)).getDate() + "").padLeft(2, '0');
+	      
+	
+	divSearch.QTDAT_FR.value = s;
+	trace("QTDAT_FR:			"+divSearch.QTDAT_FR.value);
+	
+	/*to date 설정*/
+	var LastDate = dsMaster.getColumn(dsMaster.rowposition, "IV_QTDAT_TO");
+	trace("selected_Y				" + LastDate.substr(0,4));
+	trace("selected_M				" + LastDate.substr(4,2));
+	trace("selected_D				" + LastDate.substr(6,2));
+	var date = new Date(LastDate.substr(0,4), LastDate.substr(4,2)-1, LastDate.substr(6,2));
+	
+	var l = (new Date(date)).getFullYear()
+	      + (((new Date(date)).getMonth() + 1)+ "").padLeft(2, '0')
+	      + ((new Date(date)).getDate() + "").padLeft(2, '0');
+	      
+	divSearch.QTDAT_TO.value = l;
+	trace("QTDAT_TO:			"+divSearch.QTDAT_TO.value);
+
+	
+
+}
+
+function dsMaster_onrowsetchanged(obj:Dataset, e:DSRowsetChangeEventInfo)
+{
+	trace("<dsMaster_onrowsetchanged> ");
+	/*from date 설정*/
+	var firstDate = dsMaster.getColumn(dsMaster.rowposition, "IV_QTDAT_FR");
+	trace("selected_Y				" + firstDate.substr(0,4));
+	trace("selected_M				" + firstDate.substr(4,2));
+	trace("selected_D				" + firstDate.substr(6,2));
+	var date = new Date(firstDate.substr(0,4), firstDate.substr(4,2)-1, firstDate.substr(6,2));
+	
+	var s = (new Date(date)).getFullYear()
+	      + (((new Date(date)).getMonth() + 1)+ "").padLeft(2, '0')
+	      + ((new Date(date)).getDate() + "").padLeft(2, '0');
+	      
+	divSearch.QTDAT_FR.value = s;
+	
+	/*to date 설정*/
+	var LastDate = dsMaster.getColumn(dsMaster.rowposition, "IV_QTDAT_TO");
+	trace("selected_Y				" + LastDate.substr(0,4));
+	trace("selected_M				" + LastDate.substr(4,2));
+	trace("selected_D				" + LastDate.substr(6,2));
+	var date = new Date(LastDate.substr(0,4), LastDate.substr(4,2)-1, LastDate.substr(6,2));
+	
+	var l = (new Date(date)).getFullYear()
+	      + (((new Date(date)).getMonth() + 1)+ "").padLeft(2, '0')
+	      + ((new Date(date)).getDate() + "").padLeft(2, '0');
+	      
+	divSearch.QTDAT_TO.value = l;
+
+	
+	trace("QTDAT_TO:			"+divSearch.QTDAT_FR.value);
+
+}
