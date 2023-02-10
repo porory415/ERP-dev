@@ -57,6 +57,12 @@ function cfnInitOnload()
 	];
 	gfnGetSearchHelpCbo(oSearchHelpCond, false);	
 	
+// 	var oSearchHelpCond02 = [
+//  	{sHlpName:"ZLTS_H_ORGHK", sHlpField:"DPTCD", low:"*", dsName:"dsDPTCbo", code:"ORGHK", data:"ORGNM", selecttype:"A", objid: "divSearch.cboVKGRP"}
+//     ,{sHlpName:"ZLTS_H_ORGHK", sHlpField:"BUKRS", low:sBUKRS}
+//  	];
+//  	gfnGetSearchHelpCbo(oSearchHelpCond02,false);	
+	
 	//제품그룹
 	var oSearchHelpCond03 = [
 	{sHlpName:"ZLTSP_ZMATKL", sHlpField:"ZMATKL",low:"*", dsName:"dsZMATKL", code:"ZMATKL", data:"ZMATKL_NM", selecttype:"A", objid: "divSearch.cboMATKL"}
@@ -689,76 +695,8 @@ function divSearch_QTDAT_FR_onchanged(obj:Calendar, e:ChangeEventInfo)  //없으
  	trace("after_Select:		"+ s);
  	
  	trace("QTDAT_FR:			"+divSearch.QTDAT_FR.value);
+ 	
  }
-
-function dsMaster_oncolumnchanged(obj:Dataset, e:DSColChangeEventInfo)
-{
-	trace("<dsMaster_oncolumnchanged> ");
-	/*from date 설정*/
-	var firstDate = dsMaster.getColumn(dsMaster.rowposition, "IV_QTDAT_FR");
-	trace("selected_Y				" + firstDate.substr(0,4));
-	trace("selected_M				" + firstDate.substr(4,2));
-	trace("selected_D				" + firstDate.substr(6,2));
-	var date = new Date(firstDate.substr(0,4), firstDate.substr(4,2)-1, firstDate.substr(6,2));
-	
-	var s = (new Date(date)).getFullYear()
-	      + (((new Date(date)).getMonth() + 1)+ "").padLeft(2, '0')
-	      + ((new Date(date)).getDate() + "").padLeft(2, '0');
-	      
-	
-	divSearch.QTDAT_FR.value = s;
-	trace("QTDAT_FR:			"+divSearch.QTDAT_FR.value);
-	
-	/*to date 설정*/
-	var LastDate = dsMaster.getColumn(dsMaster.rowposition, "IV_QTDAT_TO");
-	trace("selected_Y				" + LastDate.substr(0,4));
-	trace("selected_M				" + LastDate.substr(4,2));
-	trace("selected_D				" + LastDate.substr(6,2));
-	var date = new Date(LastDate.substr(0,4), LastDate.substr(4,2)-1, LastDate.substr(6,2));
-	
-	var l = (new Date(date)).getFullYear()
-	      + (((new Date(date)).getMonth() + 1)+ "").padLeft(2, '0')
-	      + ((new Date(date)).getDate() + "").padLeft(2, '0');
-	      
-	divSearch.QTDAT_TO.value = l;
-	trace("QTDAT_TO:			"+divSearch.QTDAT_TO.value);
-
-	
-
-}
-
-function dsMaster_onrowsetchanged(obj:Dataset, e:DSRowsetChangeEventInfo)
-{
-	trace("<dsMaster_onrowsetchanged> ");
-	/*from date 설정*/
-	var firstDate = dsMaster.getColumn(dsMaster.rowposition, "IV_QTDAT_FR");
-	trace("selected_Y				" + firstDate.substr(0,4));
-	trace("selected_M				" + firstDate.substr(4,2));
-	trace("selected_D				" + firstDate.substr(6,2));
-	var date = new Date(firstDate.substr(0,4), firstDate.substr(4,2)-1, firstDate.substr(6,2));
-	
-	var s = (new Date(date)).getFullYear()
-	      + (((new Date(date)).getMonth() + 1)+ "").padLeft(2, '0')
-	      + ((new Date(date)).getDate() + "").padLeft(2, '0');
-	      
-	divSearch.QTDAT_FR.value = s;
-	
-	/*to date 설정*/
-	var LastDate = dsMaster.getColumn(dsMaster.rowposition, "IV_QTDAT_TO");
-	trace("selected_Y				" + LastDate.substr(0,4));
-	trace("selected_M				" + LastDate.substr(4,2));
-	trace("selected_D				" + LastDate.substr(6,2));
-	var date = new Date(LastDate.substr(0,4), LastDate.substr(4,2)-1, LastDate.substr(6,2));
-	
-	var l = (new Date(date)).getFullYear()
-	      + (((new Date(date)).getMonth() + 1)+ "").padLeft(2, '0')
-	      + ((new Date(date)).getDate() + "").padLeft(2, '0');
-	      
-	divSearch.QTDAT_TO.value = l;
-	trace("QTDAT_TO:			"+divSearch.QTDAT_TO.value);
-
-}
-
 
 
 function divSearch_QTDAT_TO_onchanged(obj:Calendar, e:ChangeEventInfo)
@@ -787,4 +725,112 @@ function divSearch_QTDAT_TO_onchanged(obj:Calendar, e:ChangeEventInfo)
  	
  	trace("QTDAT_TO:			"+divSearch.QTDAT_TO.value);
 
+}
+// function divSearch_QTDAT_FR_oneditclick(obj:Calendar,  e:EditClickEventInfo)  없어도 됨.
+// {
+// 	//trace("user_select:			   	"+dsMaster.getColumn(dsMaster.rowposition, "IV_QTDAT_FR"));
+// 	trace("run divSearch_QTDAT_FR_oneditclick ");
+// 	var firstDate = dsMaster.getColumn(dsMaster.rowposition, "IV_QTDAT_FR");
+// 	trace("selected_Y				" + firstDate.substr(0,4));
+// 	trace("selected_M				" + firstDate.substr(4,2));
+// 	trace("selected_D				" + firstDate.substr(6,2));
+// 	var date = new Date(firstDate.substr(0,4), firstDate.substr(4,2)-1, firstDate.substr(6,2));
+// 	
+// 	var s = (new Date(date)).getFullYear()
+// 	      + (((new Date(date)).getMonth() + 1)+ "").padLeft(2, '0')
+// 	      + ((new Date(date)).getDate() + "").padLeft(2, '0');
+// 	      
+// 	//trace("after_Select:		"+ s);
+// 	
+// 	divSearch.QTDAT_FR.value = s;
+// 	
+// 	//trace("QTDAT_FR:			"+divSearch.QTDAT_FR.value);
+// 	
+// 
+// }
+
+function dsMaster_oncolumnchanged(obj:Dataset, e:DSColChangeEventInfo)
+{
+	trace("<dsMaster_oncolumnchanged> ");
+	
+	/*from date 설정*/
+	var firstDate = dsMaster.getColumn(dsMaster.rowposition, "IV_QTDAT_FR");
+// 	trace("selected_Y				" + firstDate.substr(0,4));
+// 	trace("selected_M				" + firstDate.substr(4,2));
+// 	trace("selected_D				" + firstDate.substr(6,2));
+	var date = new Date(firstDate.substr(0,4), firstDate.substr(4,2)-1, firstDate.substr(6,2));
+	
+	var s = (new Date(date)).getFullYear()
+	      + (((new Date(date)).getMonth() + 1)+ "").padLeft(2, '0')
+	      + ((new Date(date)).getDate() + "").padLeft(2, '0');
+	      
+	
+	divSearch.QTDAT_FR.value = s;
+	trace("QTDAT_FR:			"+divSearch.QTDAT_FR.value);
+	
+	
+	/*to date 설정*/
+	var LastDate = dsMaster.getColumn(dsMaster.rowposition, "IV_QTDAT_TO");
+// 	trace("selected_Y				" + LastDate.substr(0,4));
+// 	trace("selected_M				" + LastDate.substr(4,2));
+// 	trace("selected_D				" + LastDate.substr(6,2));
+	var date = new Date(LastDate.substr(0,4), LastDate.substr(4,2)-1, LastDate.substr(6,2));
+	
+	var l = (new Date(date)).getFullYear()
+	      + (((new Date(date)).getMonth() + 1)+ "").padLeft(2, '0')
+	      + ((new Date(date)).getDate() + "").padLeft(2, '0');
+	      
+	divSearch.QTDAT_TO.value = l;
+	trace("QTDAT_TO:			"+divSearch.QTDAT_TO.value);
+	
+	check_QTDAT_FR_isBigger(s,l);
+
+}
+
+function dsMaster_onrowsetchanged(obj:Dataset, e:DSRowsetChangeEventInfo)
+{
+	trace("<dsMaster_onrowsetchanged> ");
+	
+	/*from date 설정*/
+	var firstDate = dsMaster.getColumn(dsMaster.rowposition, "IV_QTDAT_FR");
+// 	trace("selected_Y				" + firstDate.substr(0,4));
+// 	trace("selected_M				" + firstDate.substr(4,2));
+// 	trace("selected_D				" + firstDate.substr(6,2));
+	var date = new Date(firstDate.substr(0,4), firstDate.substr(4,2)-1, firstDate.substr(6,2));
+	
+	var s = (new Date(date)).getFullYear()
+	      + (((new Date(date)).getMonth() + 1)+ "").padLeft(2, '0')
+	      + ((new Date(date)).getDate() + "").padLeft(2, '0');
+	      
+	divSearch.QTDAT_FR.value = s;
+	
+	/*to date 설정*/
+	var LastDate = dsMaster.getColumn(dsMaster.rowposition, "IV_QTDAT_TO");
+// 	trace("selected_Y				" + LastDate.substr(0,4));
+// 	trace("selected_M				" + LastDate.substr(4,2));
+// 	trace("selected_D				" + LastDate.substr(6,2));
+	var date = new Date(LastDate.substr(0,4), LastDate.substr(4,2)-1, LastDate.substr(6,2));
+	
+	var l = (new Date(date)).getFullYear()
+	      + (((new Date(date)).getMonth() + 1)+ "").padLeft(2, '0')
+	      + ((new Date(date)).getDate() + "").padLeft(2, '0');
+	      
+	divSearch.QTDAT_TO.value = l;
+	trace("QTDAT_TO:			"+divSearch.QTDAT_TO.value);
+
+}
+
+function check_QTDAT_FR_isBigger(Date_fr, Date_to)
+{
+	//trace(Date_fr+"     "+Date_to);
+	var objAlert = new Alert();
+	objAlert.init("Alert", 10, 10, 100, 100);
+
+	if (Date_fr > Date_to)
+	{
+		alert("시작일자가 종료일자보다 큽니다.");
+		sleep(100);  //본인이 입력한 날짜값 보여줄 시간 ->근데 안됨.
+		divSearch.QTDAT_FR.value = gfnGetFirstDates(gfnToday());  //다시 해당일 1일로 자동세팅
+		
+	}
 }
