@@ -170,6 +170,24 @@ function cfnInitForm()
 	divSearch.chkZQTTYP2.value = "P04";
 	
 	
+// 	var sSALEM = gdsEmpInfo.getColumn(0,"SALEM");
+// 	var sXTM = gdsEmpInfo.getColumn(0,"XTM");
+// 	
+// 	if(sSALEM == "X" && sXTM == "X")
+// 	{
+// 		//팀장
+// 		divSearch.cboVKGRP.value = dsList.getColumn(0, "VKGRP");
+// 		
+// 		divSearch.cboVKGRP.enable = false;
+// 	}
+// 	else if(sSALEM == "X" && sXTM != "X")
+// 	{
+// 		//담당자인경우
+// 		divSearch.cboVKGRP.value = dsList.getColumn(0, "VKGRP");;
+// 		divSearch.edtPERNRNM.value = gdsEmpInfo.getColumn(0,"ENAME")
+// 		divSearch.edtIKENID.value = gdsEmpInfo.getColumn(0,"LOGID");
+// 		
+// 	}
 }
 
 //=======================================================================================
@@ -343,6 +361,12 @@ function cfnBeforeGrid(objGrd, type, obj:Button,  e:ClickEventInfo)
 		}	
 	}
 }
+
+//=======================================================================================
+// 6.사용자 정의함수
+//---------------------------------------------------------------------------------------
+
+
 
 
 
@@ -642,7 +666,7 @@ function divResult_grdList_oncelldblclick(obj:Grid, e:GridClickEventInfo)
 function divSearch_QTDAT_FR_onchanged(obj:Calendar, e:ChangeEventInfo)  //없으면 안됨.
 {
  	
- 	trace("user_select:			   	"+dsMaster.getColumn(dsMaster.rowposition, "IV_QTDAT_FR"));
+ 	trace("user_select_fr:			   	"+dsMaster.getColumn(dsMaster.rowposition, "IV_QTDAT_FR"));
  	
  	var firstDate = dsMaster.getColumn(dsMaster.rowposition, "IV_QTDAT_FR");
  	trace("selected_Y				" + firstDate.substr(0,4));
@@ -666,7 +690,6 @@ function divSearch_QTDAT_FR_onchanged(obj:Calendar, e:ChangeEventInfo)  //없으
  	
  	trace("QTDAT_FR:			"+divSearch.QTDAT_FR.value);
  }
-
 
 function dsMaster_oncolumnchanged(obj:Dataset, e:DSColChangeEventInfo)
 {
@@ -732,8 +755,36 @@ function dsMaster_onrowsetchanged(obj:Dataset, e:DSRowsetChangeEventInfo)
 	      + ((new Date(date)).getDate() + "").padLeft(2, '0');
 	      
 	divSearch.QTDAT_TO.value = l;
+	trace("QTDAT_TO:			"+divSearch.QTDAT_TO.value);
 
-	
-	trace("QTDAT_TO:			"+divSearch.QTDAT_FR.value);
+}
+
+
+
+function divSearch_QTDAT_TO_onchanged(obj:Calendar, e:ChangeEventInfo)
+{
+	 trace("user_select_to:			   	"+dsMaster.getColumn(dsMaster.rowposition, "IV_QTDAT_TO"));
+ 	
+ 	var lastDate = dsMaster.getColumn(dsMaster.rowposition, "IV_QTDAT_TO");
+ 	trace("selected_Y				" + lastDate.substr(0,4));
+ 	trace("selected_M				" + lastDate.substr(4,2));
+ 	trace("selected_D				" + lastDate.substr(6,2));
+ 	
+ 	var date = new Date(lastDate.substr(0,4), lastDate.substr(4,2)-1, lastDate.substr(6,2));
+ 	trace("date:		"+date);
+ 	
+ 	var s = (new Date(date)).getFullYear()
+ 	      + (((new Date(date)).getMonth() + 1)+ "").padLeft(2, '0')
+ 	      + ((new Date(date)).getDate() + "").padLeft(2, '0');
+ 	
+ 	if ((new Date(date)).getMonth()+1 == 1)
+ 	{
+ 		divSearch.QTDAT_TO.value = (new Date(date)).getFullYear()
+ 	      + "01"
+ 	      + ((new Date(date)).getDate() + "").padLeft(2, '0');
+ 	}
+ 	trace("after_Select:		"+ s);
+ 	
+ 	trace("QTDAT_TO:			"+divSearch.QTDAT_TO.value);
 
 }
