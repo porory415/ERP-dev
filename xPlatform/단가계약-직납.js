@@ -57,11 +57,6 @@ function cfnInitOnload()
 	];
 	gfnGetSearchHelpCbo(oSearchHelpCond, false);	
 	
-// 	var oSearchHelpCond02 = [
-//  	{sHlpName:"ZLTS_H_ORGHK", sHlpField:"DPTCD", low:"*", dsName:"dsDPTCbo", code:"ORGHK", data:"ORGNM", selecttype:"A", objid: "divSearch.cboVKGRP"}
-//     ,{sHlpName:"ZLTS_H_ORGHK", sHlpField:"BUKRS", low:sBUKRS}
-//  	];
-//  	gfnGetSearchHelpCbo(oSearchHelpCond02,false);	
 	
 	//제품그룹
 	var oSearchHelpCond03 = [
@@ -176,24 +171,6 @@ function cfnInitForm()
 	divSearch.chkZQTTYP2.value = "P04";
 	
 	
-// 	var sSALEM = gdsEmpInfo.getColumn(0,"SALEM");
-// 	var sXTM = gdsEmpInfo.getColumn(0,"XTM");
-// 	
-// 	if(sSALEM == "X" && sXTM == "X")
-// 	{
-// 		//팀장
-// 		divSearch.cboVKGRP.value = dsList.getColumn(0, "VKGRP");
-// 		
-// 		divSearch.cboVKGRP.enable = false;
-// 	}
-// 	else if(sSALEM == "X" && sXTM != "X")
-// 	{
-// 		//담당자인경우
-// 		divSearch.cboVKGRP.value = dsList.getColumn(0, "VKGRP");;
-// 		divSearch.edtPERNRNM.value = gdsEmpInfo.getColumn(0,"ENAME")
-// 		divSearch.edtIKENID.value = gdsEmpInfo.getColumn(0,"LOGID");
-// 		
-// 	}
 }
 
 //=======================================================================================
@@ -341,25 +318,20 @@ function cfnBeforeGrid(objGrd, type, obj:Button,  e:ClickEventInfo)
 		switch (type)
 		{
 			case "CLEARROW":	// 행초기화
-				//내용기술(return true or false)
 				break;
 				
 			case "ADDROW":		// 행추가
 				//validate return false; row가 추가되지 안는상태
 				
-				//내용기술(return true or false)
 				break;
 			
 			case "INSERTROW":	// 행삽입
-				//내용기술(return true or false)
 				break;
 			
 			case "DELROW":		// 행삭제
-				//내용기술(return true or false)
 				break;
 			
 			case "COPYROW":		// 행복사
-				//내용기술(return true or false)
 				break;
 			
 			case "EXDOWN":		// 엑셀 다운로드
@@ -371,7 +343,6 @@ function cfnBeforeGrid(objGrd, type, obj:Button,  e:ClickEventInfo)
 //=======================================================================================
 // 6.사용자 정의함수
 //---------------------------------------------------------------------------------------
-
 
 
 
@@ -458,8 +429,6 @@ function divResult_btnKUNNRCall_onclick(obj:Button,  e:ClickEventInfo)
  		{
 			divSearch.edtKUNNR_NM.value = retVal.dsCostomerList.getColumn(0, "KUNNR_NM");
 			divSearch.edtKUNNR.value = retVal.dsCostomerList.getColumn(0, "KUNNR");
-// 			divSearch.edtZZKUNNR_ENDNM.value = retVal.dsCostomerList.getColumn(0, "KUNNR_NM");
-// 			divSearch.edtZZKUNNR_END.value = retVal.dsCostomerList.getColumn(0, "KUNNR");
  		}
 	}
  }
@@ -726,28 +695,6 @@ function divSearch_QTDAT_TO_onchanged(obj:Calendar, e:ChangeEventInfo)
  	trace("QTDAT_TO:			"+divSearch.QTDAT_TO.value);
 
 }
-// function divSearch_QTDAT_FR_oneditclick(obj:Calendar,  e:EditClickEventInfo)  없어도 됨.
-// {
-// 	//trace("user_select:			   	"+dsMaster.getColumn(dsMaster.rowposition, "IV_QTDAT_FR"));
-// 	trace("run divSearch_QTDAT_FR_oneditclick ");
-// 	var firstDate = dsMaster.getColumn(dsMaster.rowposition, "IV_QTDAT_FR");
-// 	trace("selected_Y				" + firstDate.substr(0,4));
-// 	trace("selected_M				" + firstDate.substr(4,2));
-// 	trace("selected_D				" + firstDate.substr(6,2));
-// 	var date = new Date(firstDate.substr(0,4), firstDate.substr(4,2)-1, firstDate.substr(6,2));
-// 	
-// 	var s = (new Date(date)).getFullYear()
-// 	      + (((new Date(date)).getMonth() + 1)+ "").padLeft(2, '0')
-// 	      + ((new Date(date)).getDate() + "").padLeft(2, '0');
-// 	      
-// 	//trace("after_Select:		"+ s);
-// 	
-// 	divSearch.QTDAT_FR.value = s;
-// 	
-// 	//trace("QTDAT_FR:			"+divSearch.QTDAT_FR.value);
-// 	
-// 
-// }
 
 function dsMaster_oncolumnchanged(obj:Dataset, e:DSColChangeEventInfo)
 {
@@ -831,6 +778,10 @@ function check_QTDAT_FR_isBigger(Date_fr, Date_to)
 		alert("시작일자가 종료일자보다 큽니다.");
 		sleep(100);  //본인이 입력한 날짜값 보여줄 시간 ->근데 안됨.
 		divSearch.QTDAT_FR.value = gfnGetFirstDates(gfnToday());  //다시 해당일 1일로 자동세팅
-		
+		divSearch.QTDAT_TO.value = gfnGetLastDates(gfnToday());  //다시 해당일 마지막일로 자동세팅		
 	}
 }
+
+
+
+
